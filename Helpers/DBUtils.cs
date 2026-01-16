@@ -66,6 +66,31 @@ namespace DevoteesAnusanga.Helper
 
         // =========================================================================================== [ User Creds Starts Here ]
 
+        public UserModel AuthenticateUser(string email, string passwordHash)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("AuthenticateUser", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+
+            if (!reader.Read()) return null;
+
+            return new UserModel
+            {
+                Id = reader.GetGuid(reader.GetOrdinal("id")),
+                Email = reader.GetString(reader.GetOrdinal("email")),
+                Name = reader.GetString(reader.GetOrdinal("name")),
+                UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
+                RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+            };
+        }
+
         // Fetch All Users
         public List<UserModel> GetUsers()
         {

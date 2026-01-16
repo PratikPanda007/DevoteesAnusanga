@@ -85,9 +85,11 @@ namespace DevoteesAnusanga.Helper
                     //Password_Hash = reader.GetString(reader.GetOrdinal("password_hash")),
                     Name = reader.GetString(reader.GetOrdinal("name")),
                     Email_Verified = reader.GetBoolean(reader.GetOrdinal("email_verified")),
+                    UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
+                    RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                     Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                     Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at")),
-                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
                 });
             }
 

@@ -1,0 +1,6 @@
+@DevoteesAnusanga_HostAddress = http://localhost:5216
+
+GET {{DevoteesAnusanga_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

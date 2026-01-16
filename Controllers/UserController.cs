@@ -34,5 +34,27 @@ namespace DevoteesAnusanga.Controllers
             var rows = _db.ExecuteNonQuery("sp_AddUser", parameters);
             return Ok(rows);
         }
+
+        [HttpGet("UserDetails")]
+        public IActionResult GetUserDetailsByEmail(string UserEmail)
+        {
+            var userDetails = _db.GetUserDetailsByEmail(UserEmail);
+            var userProfile = _db.GetUserProfileByUserId(userDetails.Id);
+            if (userDetails == null)
+                return NotFound("Profile not found");
+
+            return Ok(new { userDetails, userProfile });
+        }
+
+        [HttpGet("Profile")]
+        public IActionResult GetMyProfile(Guid userId)
+        {
+            var profile = _db.GetUserProfileByUserId(userId);
+
+            if (profile == null)
+                return NotFound("Profile not found");
+
+            return Ok(profile);
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DevoteesAnusanga.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DevoteesAnusanga.Helper
 {
@@ -80,7 +82,7 @@ namespace DevoteesAnusanga.Helper
                 {
                     Id = reader.GetGuid(reader.GetOrdinal("id")),
                     Email = reader.GetString(reader.GetOrdinal("email")),
-                    Password_Hash = reader.GetString(reader.GetOrdinal("password_hash")),
+                    //Password_Hash = reader.GetString(reader.GetOrdinal("password_hash")),
                     Name = reader.GetString(reader.GetOrdinal("name")),
                     Email_Verified = reader.GetBoolean(reader.GetOrdinal("email_verified")),
                     Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
@@ -90,6 +92,19 @@ namespace DevoteesAnusanga.Helper
             }
 
             return users;
+        }
+
+        public void UpdatePassword(string userEmail, string newPassword)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdatePassword", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Email", userEmail);
+            cmd.Parameters.AddWithValue("@PasswordHash", newPassword);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
         }
     }
 }

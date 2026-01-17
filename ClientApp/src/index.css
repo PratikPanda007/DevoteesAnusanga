@@ -1,68 +1,253 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Spiritual Networking Directory Design System */
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    /* Core palette - ISKCON Soft Saffron tones */
+    --background: 38 35% 98%;
+    --foreground: 25 25% 15%;
+
+    --card: 38 40% 99%;
+    --card-foreground: 25 25% 15%;
+
+    --popover: 38 40% 99%;
+    --popover-foreground: 25 25% 15%;
+
+    /* Soft saffron primary */
+    --primary: 28 75% 55%;
+    --primary-foreground: 38 50% 99%;
+
+    /* Warm cream secondary */
+    --secondary: 38 45% 94%;
+    --secondary-foreground: 25 25% 20%;
+
+    /* Muted saffron */
+    --muted: 35 25% 93%;
+    --muted-foreground: 25 15% 45%;
+
+    /* Soft peach accent */
+    --accent: 25 65% 70%;
+    --accent-foreground: 25 30% 15%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 30% 88%;
+    --input: 35 30% 88%;
+    --ring: 28 75% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom ISKCON tokens */
+    --saffron: 28 75% 55%;
+    --saffron-light: 35 50% 94%;
+    --saffron-dark: 25 70% 45%;
+    
+    --earth: 25 30% 35%;
+    --earth-light: 35 35% 95%;
+    
+    --gold: 42 65% 58%;
+    --gold-light: 42 55% 88%;
+    --gold-glow: 40 70% 70%;
+    
+    --cream: 38 45% 97%;
+    --cream-dark: 35 25% 92%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(28 75% 55% / 0.85), hsl(25 70% 45% / 0.9));
+    --gradient-card: linear-gradient(180deg, hsl(38 40% 99%), hsl(38 35% 97%));
+    --gradient-subtle: linear-gradient(135deg, hsl(38 45% 97%), hsl(38 45% 94%));
+    --gradient-gold: linear-gradient(135deg, hsl(28 75% 55%), hsl(42 65% 58%));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(28 75% 55% / 0.1);
+    --shadow-card: 0 2px 12px -2px hsl(25 25% 15% / 0.06);
+    --shadow-elevated: 0 12px 40px -12px hsl(28 75% 55% / 0.15);
+    --shadow-glow: 0 0 30px hsl(28 75% 55% / 0.2);
+
+    /* Typography */
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
+
+    --sidebar-background: 38 35% 98%;
+    --sidebar-foreground: 25 25% 15%;
+    --sidebar-primary: 28 75% 55%;
+    --sidebar-primary-foreground: 38 50% 99%;
+    --sidebar-accent: 38 45% 94%;
+    --sidebar-accent-foreground: 25 25% 20%;
+    --sidebar-border: 35 30% 88%;
+    --sidebar-ring: 28 75% 55%;
   }
-  a:hover {
-    color: #747bff;
+
+  .dark {
+    --background: 25 18% 8%;
+    --foreground: 38 25% 95%;
+
+    --card: 25 15% 12%;
+    --card-foreground: 38 25% 95%;
+
+    --popover: 25 15% 12%;
+    --popover-foreground: 38 25% 95%;
+
+    --primary: 28 70% 58%;
+    --primary-foreground: 25 18% 8%;
+
+    --secondary: 25 15% 18%;
+    --secondary-foreground: 38 25% 90%;
+
+    --muted: 25 12% 20%;
+    --muted-foreground: 38 18% 60%;
+
+    --accent: 25 60% 60%;
+    --accent-foreground: 25 18% 8%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 25 12% 22%;
+    --input: 25 12% 22%;
+    --ring: 28 70% 58%;
+
+    --saffron: 28 70% 58%;
+    --saffron-light: 25 35% 22%;
+    --saffron-dark: 25 65% 48%;
+    
+    --earth: 25 22% 50%;
+    --earth-light: 25 15% 18%;
+    
+    --gold: 42 60% 55%;
+    --gold-light: 42 40% 25%;
+    --gold-glow: 40 65% 58%;
+    
+    --cream: 25 15% 15%;
+    --cream-dark: 25 12% 12%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(28 70% 58% / 0.85), hsl(25 65% 48% / 0.9));
+    --gradient-card: linear-gradient(180deg, hsl(25 15% 12%), hsl(25 18% 8%));
+    --gradient-subtle: linear-gradient(135deg, hsl(25 15% 15%), hsl(25 15% 18%));
+
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.35);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.25);
+    --shadow-elevated: 0 12px 40px -12px hsl(0 0% 0% / 0.45);
+    --shadow-glow: 0 0 30px hsl(28 70% 58% / 0.18);
+
+    --sidebar-background: 25 18% 8%;
+    --sidebar-foreground: 38 25% 95%;
+    --sidebar-primary: 28 70% 58%;
+    --sidebar-primary-foreground: 25 18% 8%;
+    --sidebar-accent: 25 15% 18%;
+    --sidebar-accent-foreground: 38 25% 90%;
+    --sidebar-border: 25 12% 22%;
+    --sidebar-ring: 28 70% 58%;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-[var(--shadow-card)];
+  }
+
+  .elevated-card {
+    @apply bg-card border border-border shadow-[var(--shadow-elevated)] hover:shadow-[var(--shadow-glow)] transition-shadow duration-500;
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background: var(--gradient-gold);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

@@ -9,6 +9,7 @@
         public bool Email_Verified { get; set; }
         public int UserRoleID { get; set; }
         public string RoleName { get; set; }
+        public int HasProfile { get; set; }
         public bool IsActive { get; set; }
         public DateTime Created_At { get; set; }
         public DateTime Updated_At { get; set; }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -40,14 +40,14 @@ const profileSchema = z.object({
 });
 
 const Profile = () => {
-  const { user, loading: authLoading, signOut, refreshProfile } = useAuth();
+    const { user, profile, hasProfile, loading: authLoading, signOut, refreshProfile } = useAuth();
+
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [hasProfile, setHasProfile] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -79,41 +79,82 @@ const Profile = () => {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
+    useEffect(() => {
+        fetchProfile();
+    }, []);
 
-  const fetchProfile = async () => {
-    if (!user) return;
+    useEffect(() => {
+        if (!profile) return;
 
-    const { data } = await api.getProfileByUserId(user.id);
+        let socialLinks: {
+            website?: string;
+            linkedin?: string;
+            facebook?: string;
+            instagram?: string;
+        } = {};
 
-    if (data) {
-      setHasProfile(true);
-      setAvatarUrl(data.avatar_url || null);
-      setIsProfileDisabled(data.is_public === false);
-      const socialLinks = data.social_links || {};
-      setFormData({
-        name: data.name || '',
-        country: data.country || '',
-        city: data.city || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        mission_description: data.mission_description || '',
-        website: socialLinks.website || '',
-        linkedin: socialLinks.linkedin || '',
-        facebook: socialLinks.facebook || '',
-        instagram: socialLinks.instagram || '',
-      });
-    } else {
-      // Pre-fill name from auth metadata
-      const userName = user.user_metadata?.name || '';
-      setFormData((prev) => ({ ...prev, name: userName }));
-    }
-    setLoading(false);
-  };
+        // 🔹 socialLinks comes as STRING → parse it
+        if (typeof profile.socialLinks === 'string') {
+            try {
+                socialLinks = JSON.parse(profile.socialLinks);
+            } catch (err) {
+                console.error('Failed to parse socialLinks', err);
+            }
+        } else if (typeof profile.socialLinks === 'object' && profile.socialLinks !== null) {
+            socialLinks = profile.socialLinks;
+        }
+
+        setAvatarUrl(profile.avatarUrl ?? null);
+        setIsProfileDisabled(profile.isPublic === false);
+
+        setFormData({
+            name: profile.name ?? '',
+            country: profile.country ?? '',
+            city: profile.city ?? '',
+            email: profile.email ?? '',
+            phone: profile.phone ?? '',
+            mission_description: profile.missionDescription ?? '',
+            website: socialLinks.website ?? '',
+            linkedin: socialLinks.linkedin ?? '',
+            facebook: socialLinks.facebook ?? '',
+            instagram: socialLinks.instagram ?? '',
+        });
+    }, [profile]);
+
+    const fetchProfile = async () => {
+        if (!user) return;
+
+        // 🔹 If profile already exists from AuthContext → do NOTHING
+        if (hasProfile && profile) {
+            setLoading(false);
+            return;
+        }
+
+        // 🔹 Only fetch if profile does NOT exist
+        const { data } = await api.getProfileByUserId(user.id);
+
+        if (data) {
+            setAvatarUrl(data.avatar_url || null);
+            setIsProfileDisabled(data.is_public === false);
+
+            const socialLinks = data.social_links || {};
+            setFormData({
+                name: data.name || '',
+                country: data.country || '',
+                city: data.city || '',
+                email: data.email || '',
+                phone: data.phone || '',
+                mission_description: data.mission_description || '',
+                website: socialLinks.website || '',
+                linkedin: socialLinks.linkedin || '',
+                facebook: socialLinks.facebook || '',
+                instagram: socialLinks.instagram || '',
+            });
+        }
+
+        setLoading(false);
+    };
+
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -341,12 +382,12 @@ const Profile = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Display Name</Label>
-                  <Input
-                    id="name"
-                    value={user?.user_metadata?.name || ''}
-                    disabled
-                    className="bg-muted cursor-not-allowed"
-                  />
+                    <Input
+                        id="name"
+                        value={user?.name || ''}
+                        disabled
+                        className="bg-muted cursor-not-allowed"
+                    />
                   <p className="text-xs text-muted-foreground">
                     This is the name you registered with and cannot be changed
                   </p>

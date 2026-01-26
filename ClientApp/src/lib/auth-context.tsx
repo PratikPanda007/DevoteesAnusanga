@@ -15,6 +15,7 @@ export interface User {
     userRoleID: number;
     roleName: string;
     isActive: boolean;
+    hasProfile: number; // 👈 REQUIRED (0 | 1)
 }
 
 interface JwtPayload {
@@ -28,6 +29,7 @@ interface AuthContextType {
     user: User | null;
     profile: UserProfile | null;
     loading: boolean;
+    hasProfile: boolean;
     signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
     signOut: () => void;
     isAdmin: boolean;
@@ -50,16 +52,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     /* =======================
-       FETCH PROFILE (JWT SECURED)
+       FETCH USER + PROFILE
     ======================= */
     const loadProfile = async () => {
         const data = await fetchMyProfile();
-        setUser(data.userDetails);
-        setProfile(data.userProfile);
+
+        // Backend already decides everything
+        setUser(data.userDetails);        // includes hasProfile
+        setProfile(data.userProfile);     // null if hasProfile === 0
     };
 
     /* =======================
-       AUTO LOGIN + FETCH PROFILE
+       AUTO LOGIN
     ======================= */
     useEffect(() => {
         const initAuth = async () => {
@@ -73,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
                 const decoded = jwtDecode<JwtPayload>(token);
 
-                // ⏱ Token expired
+                // Token expired
                 if (decoded.exp * 1000 < Date.now()) {
                     logoutApi();
                     setUser(null);
@@ -82,9 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return;
                 }
 
-                // 🔐 JWT is valid → fetch user + profile from backend
+                // JWT valid → fetch backend truth
                 await loadProfile();
-            } catch (error) {
+            } catch {
                 logoutApi();
                 setUser(null);
                 setProfile(null);
@@ -101,12 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ======================= */
     const signIn = async (email: string, password: string) => {
         try {
-            // 1️⃣ Authenticate (JWT stored automatically)
             await loginApi(email, password);
-
-            // 2️⃣ Fetch full user + profile (via JWT)
             await loadProfile();
-
             return { error: null };
         } catch (error: any) {
             return { error };
@@ -123,8 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     /* =======================
-       ROLE HELPERS
+       DERIVED VALUES
     ======================= */
+    const hasProfile = user?.hasProfile === 1;
     const isAdmin = user?.userRoleID === 1;
     const isDevotee = user?.userRoleID === 2 || isAdmin;
 
@@ -134,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 user,
                 profile,
                 loading,
+                hasProfile,
                 signIn,
                 signOut,
                 isAdmin,

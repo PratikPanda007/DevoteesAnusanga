@@ -158,6 +158,7 @@ namespace DevoteesAnusanga.Helper
                 Email_Verified = reader.GetBoolean(reader.GetOrdinal("email_verified")),
                 UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
                 RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
+                HasProfile = reader.GetInt32(reader.GetOrdinal("hasProfile")),
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                 Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                 Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at")),
@@ -196,6 +197,9 @@ namespace DevoteesAnusanga.Helper
                 UpdatedAt = reader.GetDateTime(reader.GetOrdinal("updated_at"))
             };
         }
+
+        // Chekck if UserProfiles exists or not
+
 
         // =========================================================================================== [ User Creds Ends Here ]
 

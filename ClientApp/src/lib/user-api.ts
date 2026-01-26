@@ -2,14 +2,7 @@
 import { UserProfile } from '../types/user-profile';
 
 export interface UserDetailsResponse {
-    userDetails: {
-        id: string;
-        email: string;
-        name: string;
-        userRoleID: number;
-        roleName: string;
-        isActive: boolean;
-    };
+    userDetails: User;
     userProfile: UserProfile | null;
 }
 

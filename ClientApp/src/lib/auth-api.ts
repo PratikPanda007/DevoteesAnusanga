@@ -32,18 +32,28 @@ export interface LoginResponse {
 /* =======================
    API CALLS
 ======================= */
-export const login = async (
-    email: string,
-    password: string
-): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>(
-        '/Auth/login',
-        { email, password }
-    );
+//export const login = async (
+//    email: string,
+//    password: string
+//): Promise<LoginResponse> => {
+//    const { data } = await api.post<LoginResponse>(
+//        '/Auth/login',
+//        { email, password }
+//    );
 
-    // ✅ Store JWT
+//    // ✅ Store JWT
+//    localStorage.setItem(TOKEN_KEY, data.token);
+
+//    return data;
+//};
+
+export const login = async (email: string, password: string) => {
+    const { data } = await api.post('/api/Auth/login', {
+        email,
+        password,
+    });
+
     localStorage.setItem(TOKEN_KEY, data.token);
-
     return data;
 };
 
@@ -54,6 +64,6 @@ export const getToken = (): string | null => {
     return localStorage.getItem(TOKEN_KEY);
 };
 
-export const logout = (): void => {
+export const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
 };

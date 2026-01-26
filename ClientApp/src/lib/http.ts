@@ -2,8 +2,7 @@
 import { getToken, logout } from './auth-api';
 
 const api = axios.create({
-    //baseURL: import.meta.env.VITE_API_BASE_URL,
-    baseURL: "https://localhost:7165/api",
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7165',
     headers: {
         'Content-Type': 'application/json',
     },

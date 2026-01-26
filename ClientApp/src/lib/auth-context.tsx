@@ -1,155 +1,149 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { mockAuthService } from './mock-auth';
-import { api } from './mock-api';
-import { MockUser, ROLE_IDS } from './mock-data';
+﻿import React, { createContext, useContext, useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { login as loginApi, getToken, logout as logoutApi } from '@/lib/auth-api';
+
+/* =======================
+   TYPES
+======================= */
+
+export interface User {
+    id: string;
+    email: string;
+    name: string;
+    userRoleID: number;
+    roleName: string;
+    isActive: boolean;
+}
+
+interface JwtPayload {
+    nameid: string;
+    email: string;
+    role: string;
+    exp: number;
+}
 
 interface AuthContextType {
-  user: MockUser | null;
-  loading: boolean;
-  profileLoading: boolean;
-  roleId: number | null;
-  hasProfile: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-  isAdmin: boolean;
-  isDevotee: boolean;
+    user: User | null;
+    loading: boolean;
+    signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+    signOut: () => void;
+    isAdmin: boolean;
+    isDevotee: boolean;
 }
+
+/* =======================
+   CONTEXT
+======================= */
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/* =======================
+   PROVIDER
+======================= */
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<MockUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [roleId, setRoleId] = useState<number | null>(null);
-  const [hasProfile, setHasProfile] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data } = await api.getProfileByUserId(userId);
+    /* =======================
+       AUTO LOGIN FROM JWT
+    ======================= */
+    useEffect(() => {
+        const token = getToken();
 
-      if (data) {
-        return { 
-          roleId: data.role_id, 
-          exists: true 
-        };
-      }
+        if (!token) {
+            setLoading(false);
+            return;
+        }
 
-      return { roleId: null, exists: false };
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      return { roleId: null, exists: false };
-    }
-  };
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
 
-  useEffect(() => {
-    // Check for existing session on mount
-    const currentUser = mockAuthService.getCurrentUser();
-    setUser(currentUser);
-    
-    if (currentUser) {
-      setProfileLoading(true);
-      fetchUserProfile(currentUser.id).then(({ roleId, exists }) => {
-        setRoleId(roleId);
-        setHasProfile(exists);
-        setProfileLoading(false);
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
+            // ⏱ Token expired
+            if (decoded.exp * 1000 < Date.now()) {
+                logoutApi();
+                setUser(null);
+                setLoading(false);
+                return;
+            }
 
-    // Subscribe to auth state changes
-    const unsubscribe = mockAuthService.onAuthStateChange((user) => {
-      setUser(user);
-      
-      if (user) {
-        setProfileLoading(true);
-        fetchUserProfile(user.id).then(({ roleId, exists }) => {
-          setRoleId(roleId);
-          setHasProfile(exists);
-          setProfileLoading(false);
-        });
-      } else {
-        setRoleId(null);
-        setHasProfile(false);
-        setProfileLoading(false);
-      }
-    });
+            // 🔄 Rehydrate user from JWT
+            setUser({
+                id: decoded.nameid,
+                email: decoded.email,
+                name: '', // optional – fetch profile later
+                userRoleID: decoded.role === 'Admin' ? 1 : 2,
+                roleName: decoded.role,
+                isActive: true,
+            });
+        } catch {
+            logoutApi();
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    return () => unsubscribe();
-  }, []);
+    /* =======================
+       LOGIN
+    ======================= */
+    const signIn = async (email: string, password: string) => {
+        try {
+            const result = await loginApi(email, password);
 
-  const signUp = async (email: string, password: string, name: string) => {
-    const { user, error } = await mockAuthService.signUp(email, password, name);
-    
-    if (user) {
-      setUser(user);
-    }
+            setUser({
+                id: result.user.id,
+                email: result.user.email,
+                name: result.user.name,
+                userRoleID: result.user.userRoleID,
+                roleName: result.user.roleName,
+                isActive: result.user.isActive,
+            });
 
-    return { error };
-  };
+            return { error: null };
+        } catch (error: any) {
+            return { error };
+        }
+    };
 
-  const signIn = async (email: string, password: string) => {
-    const { user, error } = await mockAuthService.signIn(email, password);
-    
-    if (user) {
-      setUser(user);
-      setProfileLoading(true);
-      const { roleId, exists } = await fetchUserProfile(user.id);
-      setRoleId(roleId);
-      setHasProfile(exists);
-      setProfileLoading(false);
-    }
+    /* =======================
+       LOGOUT
+    ======================= */
+    const signOut = () => {
+        logoutApi();
+        setUser(null);
+    };
 
-    return { error };
-  };
+    /* =======================
+       ROLE HELPERS
+    ======================= */
+    const isAdmin = user?.userRoleID === 1;
+    const isDevotee = user?.userRoleID === 2 || isAdmin;
 
-  const signOut = async () => {
-    await mockAuthService.signOut();
-    setUser(null);
-    setRoleId(null);
-    setHasProfile(false);
-  };
-
-  const refreshProfile = async () => {
-    if (user) {
-      const { roleId, exists } = await fetchUserProfile(user.id);
-      setRoleId(roleId);
-      setHasProfile(exists);
-    }
-  };
-
-  const isAdmin = roleId === ROLE_IDS.ADMIN;
-  const isDevotee = roleId === ROLE_IDS.DEVOTEE || roleId === ROLE_IDS.ADMIN;
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        profileLoading,
-        roleId,
-        hasProfile,
-        signUp,
-        signIn,
-        signOut,
-        refreshProfile,
-        isAdmin,
-        isDevotee,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                loading,
+                signIn,
+                signOut,
+                isAdmin,
+                isDevotee,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
+/* =======================
+   HOOK
+======================= */
+
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within AuthProvider');
+    }
+    return context;
 };

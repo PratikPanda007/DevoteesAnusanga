@@ -12,6 +12,7 @@ import { api } from '@/lib/mock-api';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Save, Loader2, User, MapPin, Mail, Phone, Globe, Link as LinkIcon, Camera, Trash2, EyeOff } from 'lucide-react';
+import ChangePasswordSection from '@/components/profile/ChangePasswordSection';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -514,6 +515,9 @@ const Profile = () => {
                 </>
               )}
             </Button>
+
+            {/* Change Password */}
+            {hasProfile && <ChangePasswordSection />}
 
             {/* Disable Profile */}
             {hasProfile && (

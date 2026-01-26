@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Layout } from '@/components/layout/Layout';
+import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Globe, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
@@ -40,6 +41,7 @@ const Auth = () => {
   const [agreeGuidelines, setAgreeGuidelines] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -200,6 +202,15 @@ const Auth = () => {
                   {errors.password && (
                     <p className="text-sm text-destructive">{errors.password}</p>
                   )}
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => setForgotPasswordOpen(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
                 </div>
 
                 {/* Agreement Checkboxes for Sign Up */}
@@ -312,6 +323,11 @@ const Auth = () => {
             </CardContent>
           </Card>
         </div>
+
+        <ForgotPasswordDialog 
+          open={forgotPasswordOpen} 
+          onOpenChange={setForgotPasswordOpen} 
+        />
       </div>
     </Layout>
   );

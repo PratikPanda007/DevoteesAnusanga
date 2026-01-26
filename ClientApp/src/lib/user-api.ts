@@ -1,10 +1,19 @@
-﻿// src/lib/user-api.ts
-import api from './http';
+﻿import api from './http';
+import { UserProfile } from '../types/user-profile';
 
-export const fetchUserDetails = async (email: string) => {
-    const { data } = await api.get('/api/User/UserDetails', {
-        params: { UserEmail: email },
-    });
+export interface UserDetailsResponse {
+    userDetails: {
+        id: string;
+        email: string;
+        name: string;
+        userRoleID: number;
+        roleName: string;
+        isActive: boolean;
+    };
+    userProfile: UserProfile | null;
+}
 
+export const fetchMyProfile = async (): Promise<UserDetailsResponse> => {
+    const { data } = await api.get('/api/User/UserDetails');
     return data;
 };

@@ -1,7 +1,8 @@
 ﻿import React, { createContext, useContext, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { login as loginApi, getToken, logout as logoutApi } from '@/lib/auth-api';
-import { fetchUserDetails } from '@/lib/user-api';
+import { fetchMyProfile } from '@/lib/user-api';
+import { UserProfile } from '@/types/user-profile';
 
 /* =======================
    TYPES
@@ -16,21 +17,10 @@ export interface User {
     isActive: boolean;
 }
 
-export interface UserProfile {
-    id: string;
-    userId: string;
-    phone: string;
-    country: string;
-    city: string;
-    missionDescription: string;
-    avatarUrl: string | null;
-    socialLinks: string;
-    isPublic: boolean;
-}
-
 interface JwtPayload {
     nameid: string;
     email: string;
+    role: string;
     exp: number;
 }
 
@@ -60,6 +50,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     /* =======================
+       FETCH PROFILE (JWT SECURED)
+    ======================= */
+    const loadProfile = async () => {
+        const data = await fetchMyProfile();
+        setUser(data.userDetails);
+        setProfile(data.userProfile);
+    };
+
+    /* =======================
        AUTO LOGIN + FETCH PROFILE
     ======================= */
     useEffect(() => {
@@ -83,11 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return;
                 }
 
-                // 🔥 Fetch full user + profile from backend
-                const data = await fetchUserDetails(decoded.email);
-
-                setUser(data.userDetails);
-                setProfile(data.userProfile);
+                // 🔐 JWT is valid → fetch user + profile from backend
+                await loadProfile();
             } catch (error) {
                 logoutApi();
                 setUser(null);
@@ -105,14 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ======================= */
     const signIn = async (email: string, password: string) => {
         try {
-            // 1️⃣ Authenticate (stores JWT)
+            // 1️⃣ Authenticate (JWT stored automatically)
             await loginApi(email, password);
 
-            // 2️⃣ Fetch full user + profile
-            const data = await fetchUserDetails(email);
-
-            setUser(data.userDetails);
-            setProfile(data.userProfile);
+            // 2️⃣ Fetch full user + profile (via JWT)
+            await loadProfile();
 
             return { error: null };
         } catch (error: any) {

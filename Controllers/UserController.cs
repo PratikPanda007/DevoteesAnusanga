@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
 
 namespace DevoteesAnusanga.Controllers
 {
@@ -37,7 +38,7 @@ namespace DevoteesAnusanga.Controllers
             return Ok(rows);
         }
 
-        [HttpGet("UserDetails")]
+        [HttpGet("UserDetails_old")]
         public IActionResult GetUserDetailsByEmail(string UserEmail)
         {
             var userDetails = _db.GetUserDetailsByEmail(UserEmail);
@@ -47,6 +48,30 @@ namespace DevoteesAnusanga.Controllers
 
             return Ok(new { userDetails, userProfile });
         }
+
+        [Authorize]
+        [HttpGet("UserDetails")]
+        public IActionResult GetUserDetails()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(email))
+                return Unauthorized();
+
+            var user = _db.GetUserDetailsByEmail(email);
+            if (user == null)
+                return NotFound();
+
+            var profile = _db.GetUserProfileByUserId(Guid.Parse(userId));
+
+            return Ok(new
+            {
+                userDetails = user,
+                userProfile = profile
+            });
+        }
+
 
         [HttpGet("Profile")]
         public IActionResult GetMyProfile(Guid userId)

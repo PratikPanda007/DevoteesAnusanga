@@ -227,5 +227,23 @@ namespace DevoteesAnusanga.Helper
 
             return countries;
         }
+
+        // ==================================================================== [ Profile Photo Update Starts Here]
+        public async Task UpdateProfilePicAsync(Guid userId, string avatarUrl)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdateProfilePic", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@AvatarUrl", avatarUrl);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+
+        // ==================================================================== [ Profile Photo Update Ends Here]
+
     }
 }

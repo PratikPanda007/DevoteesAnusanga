@@ -1,4 +1,5 @@
 ﻿using DevoteesAnusanga.Helper;
+using DevoteesAnusanga.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -13,10 +14,12 @@ namespace DevoteesAnusanga.Controllers
     public class UserController : ControllerBase
     {
         private readonly DBUtils _db;
+        private readonly AzureBlobService _blobService;
 
-        public UserController(DBUtils db)
+        public UserController(DBUtils db, AzureBlobService blobService)
         {
             _db = db;
+            _blobService = blobService;
         }
 
         [HttpGet("list")]
@@ -83,5 +86,25 @@ namespace DevoteesAnusanga.Controllers
 
             return Ok(profile);
         }
+
+        [Authorize]
+        [HttpPost("upload-avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            if (!file.ContentType.StartsWith("image/"))
+                return BadRequest("Only image files allowed");
+
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var imageUrl = await _blobService.UploadProfileImageAsync(file, userId);
+            await _db.UpdateProfilePicAsync(userId, imageUrl);
+
+            return Ok(new { avatarUrl = imageUrl });
+        }
+
+
     }
 }

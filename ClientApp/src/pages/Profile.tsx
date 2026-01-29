@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CountrySelector } from '@/components/directory/CountrySelector';
 import { useAuth } from '@/lib/auth-context';
-import { api } from '@/lib/mock-api';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Save, Loader2, User, MapPin, Mail, Phone, Globe, Link as LinkIcon, Camera, Trash2, EyeOff } from 'lucide-react';
@@ -25,6 +24,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+import api from "@/lib/http";
+import { uploadAvatar } from "@/lib/profile-api";
 
 const profileSchema = z.object({
   name: z.string().trim().max(100).optional().or(z.literal('')),
@@ -84,42 +86,42 @@ const Profile = () => {
     }, []);
 
     useEffect(() => {
-        if (!profile) return;
+  if (!profile) return;
 
-        let socialLinks: {
-            website?: string;
-            linkedin?: string;
-            facebook?: string;
-            instagram?: string;
-        } = {};
+  let socialLinks: {
+    website?: string;
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+  } = {};
 
-        // 🔹 socialLinks comes as STRING → parse it
-        if (typeof profile.socialLinks === 'string') {
-            try {
-                socialLinks = JSON.parse(profile.socialLinks);
-            } catch (err) {
-                console.error('Failed to parse socialLinks', err);
-            }
-        } else if (typeof profile.socialLinks === 'object' && profile.socialLinks !== null) {
-            socialLinks = profile.socialLinks;
-        }
+  // 🔹 socialLinks comes as STRING → parse it
+  if (typeof profile.socialLinks === 'string') {
+    try {
+      socialLinks = JSON.parse(profile.socialLinks);
+    } catch (err) {
+      console.error('Failed to parse socialLinks', err);
+    }
+  } else if (typeof profile.socialLinks === 'object' && profile.socialLinks !== null) {
+    socialLinks = profile.socialLinks;
+  }
 
-        setAvatarUrl(profile.avatarUrl ?? null);
-        setIsProfileDisabled(profile.isPublic === false);
+  setAvatarUrl(profile.avatarUrl ?? null);
+  setIsProfileDisabled(profile.isPublic === false);
 
-        setFormData({
-            name: profile.name ?? '',
-            country: profile.country ?? '',
-            city: profile.city ?? '',
-            email: profile.email ?? '',
-            phone: profile.phone ?? '',
-            mission_description: profile.missionDescription ?? '',
-            website: socialLinks.website ?? '',
-            linkedin: socialLinks.linkedin ?? '',
-            facebook: socialLinks.facebook ?? '',
-            instagram: socialLinks.instagram ?? '',
-        });
-    }, [profile]);
+  setFormData({
+    name: profile.name ?? '',
+    country: profile.country ?? '',
+    city: profile.city ?? '',
+    email: profile.email ?? '',
+    phone: profile.phone ?? '',
+    mission_description: profile.missionDescription ?? '',
+    website: socialLinks.website ?? '',
+    linkedin: socialLinks.linkedin ?? '',
+    facebook: socialLinks.facebook ?? '',
+    instagram: socialLinks.instagram ?? '',
+  });
+}, [profile]);
 
     const fetchProfile = async () => {
         if (!user) return;
@@ -185,35 +187,36 @@ const Profile = () => {
     return true;
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+    const handleAvatarUpload = async (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
+        if (!file.type.startsWith("image/")) {
+            toast.error("Only image files are allowed");
+            return;
+        }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be less than 2MB');
-      return;
-    }
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("Image must be less than 2MB");
+            return;
+        }
 
-    setUploadingAvatar(true);
+        setUploadingAvatar(true);
 
-    try {
-      const { url } = await api.uploadAvatar(user.id, file);
-      setAvatarUrl(url);
-      toast.success('Profile picture updated!');
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
+        try {
+            const { avatarUrl } = await uploadAvatar(file);
+            setAvatarUrl(avatarUrl);
+            toast.success("Profile image updated");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to upload image");
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

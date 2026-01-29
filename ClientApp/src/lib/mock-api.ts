@@ -196,22 +196,20 @@ export const api = {
     return { data: null, error: null };
   },
 
-  // ============ FILE UPLOAD (Mock) ============
+  // ============ FILE UPLOAD ============
 
-  uploadAvatar: async (userId: string, file: File): Promise<{ url: string; error: null }> => {
-    await delay(500);
-    
-    // Create a local object URL for preview (in real app, this would be uploaded to server)
-    const url = URL.createObjectURL(file);
-    
-    // Update the profile with the avatar URL
-    const index = profiles.findIndex(p => p.user_id === userId);
-    if (index !== -1) {
-      profiles[index].avatar_url = url;
-    }
-    
-    return { url, error: null };
-  },
+    uploadAvatar: async (userId: string, file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(`/api/profile/${userId}/avatar`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!res.ok) throw new Error('Upload failed');
+        return res.json(); // { url: string }
+    },
 
   // ============ HELPERS ============
 

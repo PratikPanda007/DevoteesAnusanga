@@ -1,5 +1,6 @@
 ﻿using DevoteesAnusanga.Helper;
 using DevoteesAnusanga.Middleware;
+using DevoteesAnusanga.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,6 +14,7 @@ var jwtKey = Encoding.UTF8.GetBytes(jwtSection["Key"]);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<AzureBlobService>();
 
 builder.Services.AddSwaggerGen(c =>
 {

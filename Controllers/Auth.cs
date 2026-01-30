@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Authorization;
 using DevoteesAnusanga.Security;
+using DevoteesAnusanga.Services;
 
 namespace DevoteesAnusanga.Controllers
 {
@@ -18,11 +19,13 @@ namespace DevoteesAnusanga.Controllers
     {
         private readonly IConfiguration _config;
         private readonly DBUtils _db;
+        private readonly UserService _userService;
 
-        public AuthController(IConfiguration config, DBUtils db)
+        public AuthController(IConfiguration config, DBUtils db, UserService userService)
         {
             _config = config;
             _db = db;
+            _userService = userService;
         }
 
         // -------------------------------
@@ -90,22 +93,45 @@ namespace DevoteesAnusanga.Controllers
             return authHeader == validKey;
         }
 
-        private static string HashPassword(string password)
+        private static string HashPassword_old(string password)
         {
             using var sha256 = SHA256.Create();
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(bytes);
         }
 
+        private static string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLoginRequest request)
         {
-            var hashedPassword = HashPassword(request.Password);
+            // 1️⃣ Get stored hash from DB
+            var storedHash = _db.GetHashPasswordByEmail(request.Email);
 
-            var user = _db.AuthenticateUser(request.Email, hashedPassword);
+            if (string.IsNullOrEmpty(storedHash))
+                return Unauthorized("Invalid credentials");
+
+            // 2️⃣ Verify password using BCrypt
+            var isValidPassword = BCrypt.Net.BCrypt.Verify(
+                request.Password,
+                storedHash
+            );
+
+            var newHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            if (!isValidPassword)
+                return Unauthorized("Invalid credentials");
+
+            // 3️⃣ Fetch user (NO password check here)
+            var user = _db.AuthenticateUser(request.Email);
+
             if (user == null)
                 return Unauthorized("Invalid credentials");
 
+            // 4️⃣ Generate JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
 
@@ -137,5 +163,34 @@ namespace DevoteesAnusanga.Controllers
                 user
             });
         }
+
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var userId = Guid.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
+
+            // 1️⃣ Get stored hash from DB
+            var storedHash = await _db.GetPasswordHashAsync(userId);
+
+            if (string.IsNullOrEmpty(storedHash))
+                return BadRequest("User not found");
+
+            // 2️⃣ Verify current password
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, storedHash))
+                return BadRequest("Current password is incorrect");
+
+            // 3️⃣ Hash new password
+            var newHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+            // 4️⃣ Update password in DB (existing method)
+            await _db.UpdatePasswordAsync(userId, newHash);
+
+            return Ok("Password updated successfully");
+        }
+
     }
 }

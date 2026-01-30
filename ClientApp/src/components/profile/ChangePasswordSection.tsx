@@ -7,6 +7,8 @@ import { Lock, Loader2, Eye, EyeOff, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { changePassword } from "@/lib/auth-api";
+
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
@@ -57,28 +59,35 @@ const ChangePasswordSection = () => {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    setSaving(true);
+        if (!validateForm()) return;
 
-    // Simulate API call for password change (mock implementation)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+        setSaving(true);
 
-    // Reset form
-    setFormData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-    
-    toast.success('Password changed successfully!');
-    setSaving(false);
-  };
+        try {
+            await changePassword(
+                formData.currentPassword,
+                formData.newPassword
+            );
+
+            toast.success("Password changed successfully!");
+
+            setFormData({
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+        } catch (err: any) {
+            toast.error(
+                err?.response?.data || "Failed to change password"
+            );
+        } finally {
+            setSaving(false);
+        }
+    };
+
 
   return (
     <Card className="elevated-card">
@@ -186,7 +195,7 @@ const ChangePasswordSection = () => {
             )}
           </div>
 
-          <Button type="submit" disabled={saving} className="w-full sm:w-auto">
+          <Button type="submit" disabled={saving} onClick={handleSubmit} className="w-full sm:w-auto">
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

@@ -67,3 +67,16 @@ export const getToken = (): string | null => {
 export const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
 };
+
+/* =======================
+   Password Update HELPERS
+======================= */
+export const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+) => {
+    await api.post("/api/Auth/change-password", {
+        currentPassword,
+        newPassword,
+    });
+};

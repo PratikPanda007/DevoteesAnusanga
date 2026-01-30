@@ -26,7 +26,13 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import api from "@/lib/http";
-import { uploadAvatar } from "@/lib/profile-api";
+import {
+  uploadAvatar,
+  updateProfile,
+  createProfile,
+  deleteMyProfile,
+  getMyProfile
+} from "@/lib/profile-api";
 
 const profileSchema = z.object({
   name: z.string().trim().max(100).optional().or(z.literal('')),
@@ -124,38 +130,30 @@ const Profile = () => {
 }, [profile]);
 
     const fetchProfile = async () => {
-        if (!user) return;
+        try {
+            const data = await getMyProfile();
+            setAvatarUrl(data.avatarUrl ?? null);
+            setIsProfileDisabled(data.isPublic === false);
 
-        // 🔹 If profile already exists from AuthContext → do NOTHING
-        if (hasProfile && profile) {
-            setLoading(false);
-            return;
-        }
+            const socialLinks = data.socialLinks ?? {};
 
-        // 🔹 Only fetch if profile does NOT exist
-        const { data } = await api.getProfileByUserId(user.id);
-
-        if (data) {
-            setAvatarUrl(data.avatar_url || null);
-            setIsProfileDisabled(data.is_public === false);
-
-            const socialLinks = data.social_links || {};
             setFormData({
-                name: data.name || '',
-                country: data.country || '',
-                city: data.city || '',
-                email: data.email || '',
-                phone: data.phone || '',
-                mission_description: data.mission_description || '',
-                website: socialLinks.website || '',
-                linkedin: socialLinks.linkedin || '',
-                facebook: socialLinks.facebook || '',
-                instagram: socialLinks.instagram || '',
+                name: data.name ?? '',
+                country: data.country ?? '',
+                city: data.city ?? '',
+                email: data.email ?? '',
+                phone: data.phone ?? '',
+                mission_description: data.missionDescription ?? '',
+                website: socialLinks.website ?? '',
+                linkedin: socialLinks.linkedin ?? '',
+                facebook: socialLinks.facebook ?? '',
+                instagram: socialLinks.instagram ?? '',
             });
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
+
 
 
   const handleChange = (field: string, value: string | boolean) => {
@@ -218,48 +216,45 @@ const Profile = () => {
     };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) return;
-    if (!validateForm()) {
-      toast.error('Please fix the errors before saving.');
-      return;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    setSaving(true);
+        if (!validateForm()) return;
 
-    const socialLinks = {
-      website: formData.website || null,
-      linkedin: formData.linkedin || null,
-      facebook: formData.facebook || null,
-      instagram: formData.instagram || null,
+        setSaving(true);
+
+        const profileData = {
+            name: formData.name || null,
+            country: formData.country,
+            city: formData.city || null,
+            email: formData.email || null,
+            phone: formData.phone || null,
+            missionDescription: formData.mission_description || null,
+            socialLinks: {
+                website: formData.website || null,
+                linkedin: formData.linkedin || null,
+                facebook: formData.facebook || null,
+                instagram: formData.instagram || null,
+            },
+            avatarUrl,
+        };
+
+        try {
+            hasProfile
+                ? await updateProfile(profileData)
+                : await createProfile(profileData);
+
+            toast.success("Profile saved successfully!");
+        } catch {
+            toast.error("Failed to save profile");
+        } finally {
+            setSaving(false);
+        }
+
+        // ⬇️ refresh OUTSIDE try/catch
+        await refreshProfile();
     };
 
-    const profileData = {
-      user_id: user.id,
-      name: formData.name.trim() || null,
-      country: formData.country,
-      city: formData.city.trim() || null,
-      email: formData.email || null,
-      phone: formData.phone || null,
-      mission_description: formData.mission_description || null,
-      social_links: socialLinks,
-      avatar_url: avatarUrl,
-    };
-
-    if (hasProfile) {
-      await api.updateProfile(user.id, profileData);
-    } else {
-      await api.createProfile(profileData);
-    }
-
-    setHasProfile(true);
-    await refreshProfile();
-    toast.success('Profile saved successfully!');
-
-    setSaving(false);
-  };
 
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);

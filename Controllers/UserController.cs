@@ -1,4 +1,5 @@
 ﻿using DevoteesAnusanga.Helper;
+using DevoteesAnusanga.Models;
 using DevoteesAnusanga.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,13 @@ namespace DevoteesAnusanga.Controllers
     {
         private readonly DBUtils _db;
         private readonly AzureBlobService _blobService;
+        private readonly ProfileService _profileService;
 
-        public UserController(DBUtils db, AzureBlobService blobService)
+        public UserController(DBUtils db, AzureBlobService blobService, ProfileService profileService)
         {
             _db = db;
             _blobService = blobService;
+            _profileService = profileService;
         }
 
         [HttpGet("list")]
@@ -105,6 +108,15 @@ namespace DevoteesAnusanga.Controllers
             return Ok(new { avatarUrl = imageUrl });
         }
 
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
+            await _profileService.UpdateProfileAsync(userId, dto);
+
+            return Ok(new { message = "Profile updated successfully" });
+        }
     }
 }

@@ -15,6 +15,8 @@ var jwtKey = Encoding.UTF8.GetBytes(jwtSection["Key"]);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<AzureBlobService>();
+builder.Services.AddScoped<ProfileService>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddSwaggerGen(c =>
 {

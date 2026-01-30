@@ -66,14 +66,13 @@ namespace DevoteesAnusanga.Helper
 
         // =========================================================================================== [ User Creds Starts Here ]
 
-        public UserModel AuthenticateUser(string email, string passwordHash)
+        public UserModel AuthenticateUser(string email)
         {
             using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("AuthenticateUser", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@Email", email);
-            cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
 
             conn.Open();
             using var reader = cmd.ExecuteReader();
@@ -198,8 +197,22 @@ namespace DevoteesAnusanga.Helper
             };
         }
 
-        // Chekck if UserProfiles exists or not
+        public string? GetHashPasswordByEmail(string userEmail)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetHashPasswordByEmail", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
 
+            cmd.Parameters.AddWithValue("@Email", userEmail);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            return reader.GetString(0); // PasswordHash
+        }
 
         // =========================================================================================== [ User Creds Ends Here ]
 
@@ -241,9 +254,55 @@ namespace DevoteesAnusanga.Helper
             await conn.OpenAsync();
             await cmd.ExecuteNonQueryAsync();
         }
-
-
         // ==================================================================== [ Profile Photo Update Ends Here]
+
+        // ==================================================================== [ Profile Data Update Starts Here]
+        public async Task UpdateUserProfileAsync(Guid userId, string country, string? city, string? email, string? phone,
+            string? missionDescription, string? socialLinksJson)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdateUserProfile", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@Country", country);
+            cmd.Parameters.AddWithValue("@City", (object?)city ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Email", (object?)email ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Phone", (object?)phone ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@MissionDescription", (object?)missionDescription ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@SocialLinks", (object?)socialLinksJson ?? DBNull.Value);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+        // ==================================================================== [ Profile Data Update Ends Here]
+
+        // ==================================================================== [ Profile Password Update Starts Here]
+        public async Task<string> GetPasswordHashAsync(Guid userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetPasswordHash", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            conn.Open();
+            return (string?)await cmd.ExecuteScalarAsync();
+        }
+
+        public async Task UpdatePasswordAsync(Guid userId, string passwordHash)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdatePasswordHash", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+            conn.Open();
+            await cmd.ExecuteNonQueryAsync();
+        }
+        // ==================================================================== [ Profile Password Update Ends Here]
 
     }
 }

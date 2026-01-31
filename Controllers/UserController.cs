@@ -118,5 +118,23 @@ namespace DevoteesAnusanga.Controllers
 
             return Ok(new { message = "Profile updated successfully" });
         }
+
+        [Authorize]
+        [HttpPost("toggle-profile")]
+        public async Task<IActionResult> ToggleProfile([FromBody] ToggleProfileRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (request.ToggleProfile != 0 && request.ToggleProfile != 1)
+                return BadRequest("Invalid toggle value");
+
+            await _db.ToggleUserProfileAsync(userId, request.ToggleProfile);
+
+            return Ok(new
+            {
+                isPublic = request.ToggleProfile
+            });
+        }
+
     }
 }

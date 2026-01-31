@@ -304,5 +304,20 @@ namespace DevoteesAnusanga.Helper
         }
         // ==================================================================== [ Profile Password Update Ends Here]
 
+        // ==================================================================== [ Toggling Profile Visibility Starts Here]
+        public async Task ToggleUserProfileAsync(Guid userId, int toggleProfile)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("DisableUserProfile", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@ToggleProfile", toggleProfile);
+
+            conn.Open();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // ==================================================================== [ Toggling Profile Visibility Ends Here]
     }
 }

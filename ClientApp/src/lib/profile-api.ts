@@ -46,3 +46,14 @@ export const deleteMyProfile = async () => {
     const res = await api.delete("/api/User/profile");
     return res.data;
 };
+
+/* ================================
+   Toggle PROFILE Visibility
+================================ */
+
+export const toggleProfileVisibility = async (toggleProfile: 0 | 1) => {
+    const res = await api.post("/api/User/toggle-profile", {
+        toggleProfile,
+    });
+    return res.data; // { isPublic }
+};

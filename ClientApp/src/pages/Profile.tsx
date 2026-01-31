@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import api from "@/lib/http";
+import { toggleProfileVisibility } from "@/lib/profile-api";
+
 import {
   uploadAvatar,
   updateProfile,
@@ -572,24 +574,40 @@ const Profile = () => {
                         </p>
                       </div>
                     </div>
-                    <Switch
-                      checked={isProfileDisabled}
-                      onCheckedChange={async (checked) => {
-                        if (!user) return;
-                        setTogglingDisabled(true);
-                        try {
-                          await api.updateProfile(user.id, { is_public: !checked });
-                          setIsProfileDisabled(checked);
-                          await refreshProfile();
-                          toast.success(checked ? 'Profile hidden from directory' : 'Profile visible in directory');
-                        } catch (error) {
-                          toast.error('Failed to update visibility');
-                        } finally {
-                          setTogglingDisabled(false);
-                        }
-                      }}
-                      disabled={togglingDisabled}
-                    />
+                        <Switch
+                            checked={isProfileDisabled}
+                            onCheckedChange={async (checked) => {
+                                if (!user) return;
+
+                                setTogglingDisabled(true);
+
+                                try {
+                                    // checked === true → disable profile → is_public = 0
+                                    // checked === false → enable profile → is_public = 1
+                                    await toggleProfileVisibility(checked ? 0 : 1);
+
+                                    setIsProfileDisabled(checked);
+                                    await refreshProfile();
+
+                                    toast.success(
+                                        checked
+                                            ? "Profile hidden from directory"
+                                            : "Profile visible in directory"
+                                    );
+                                } catch (error) {
+                                    //toast.error("Failed to update visibility");
+                                } finally {
+                                    setTogglingDisabled(false);
+                                    toast.success(
+                                        checked
+                                            ? "Profile hidden from directory"
+                                            : "Profile visible in directory"
+                                    );
+                                }
+                            }}
+                            disabled={togglingDisabled}
+                        />
+
                   </div>
                 </CardContent>
               </Card>

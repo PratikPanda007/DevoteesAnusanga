@@ -64,6 +64,24 @@ namespace DevoteesAnusanga.Helper
             return cmd.ExecuteScalar();
         }
 
+        // ==================================================================================== [ User Registration Starts Here ]
+        public Guid UserRegistrationAsync(string name, string email, string passwordHash)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("CreateUser", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Name", name);
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+            conn.Open();
+
+            var result = cmd.ExecuteScalar();
+            return result == null ? Guid.Empty : (Guid)result;
+        }
+
+        // ==================================================================================== [ User Registration Ends Here ]
         // =========================================================================================== [ User Creds Starts Here ]
 
         public UserModel AuthenticateUser(string email)

@@ -105,6 +105,32 @@ namespace DevoteesAnusanga.Controllers
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] UserRegisterRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest("Invalid data");
+            }
+
+            // Use EXISTING hashing logic (same as login uses)
+            var passwordHash = HashPassword(request.Password);
+
+            var userId = _db.UserRegistrationAsync(
+                request.Name,
+                request.Email,
+                passwordHash
+            );
+
+            if (userId == Guid.Empty)
+                return BadRequest("User already exists");
+
+            return Ok("User registered successfully");
+        }
+
+
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLoginRequest request)
         {
@@ -163,7 +189,6 @@ namespace DevoteesAnusanga.Controllers
                 user
             });
         }
-
 
         [Authorize]
         [HttpPost("change-password")]

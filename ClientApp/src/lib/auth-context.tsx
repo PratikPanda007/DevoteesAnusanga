@@ -1,7 +1,7 @@
 ﻿import React, { createContext, useContext, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { login as loginApi, getToken, logout as logoutApi } from '@/lib/auth-api';
-import { fetchMyProfile } from '@/lib/user-api';
+import { fetchMyProfile, registerUser } from '@/lib/user-api';
 import { UserProfile } from '@/types/user-profile';
 
 /* =======================
@@ -31,6 +31,11 @@ interface AuthContextType {
     loading: boolean;
     hasProfile: boolean;
     signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+    signUp: (
+        email: string,
+        password: string,
+        name: string
+    ) => Promise<{ error: Error | null }>;
     signOut: () => void;
     isAdmin: boolean;
     isDevotee: boolean;
@@ -114,6 +119,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     /* =======================
+       SIGNUP
+    ======================= */
+    const signUp = async (
+        email: string,
+        password: string,
+        name: string
+    ) => {
+        try {
+            await registerUser({
+                email,
+                password,
+                name,
+            });
+
+            return { error: null };
+        } catch (err: any) {
+            return {
+                error: {
+                    message: err?.response?.data || "Registration failed",
+                },
+            };
+        }
+    };
+
+    /* =======================
        LOGOUT
     ======================= */
     const signOut = () => {
@@ -137,6 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 loading,
                 hasProfile,
                 signIn,
+                signUp,
                 signOut,
                 isAdmin,
                 isDevotee,

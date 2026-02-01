@@ -32,10 +32,32 @@ export const getMyProfile = async () => {
     return res.data;
 };
 
-export const createProfile = async (profileData: any) => {
-    const res = await api.post("/api/User/profile", profileData);
+//export const createProfile = async (profileData: any) => {
+//    const res = await api.post("/api/User/profile", profileData);
+//    return res.data;
+//};
+
+export const createProfile = async (data: {
+    name: string;
+    email: string;
+    phone?: string;
+    country?: string;
+    city?: string;
+    missionDescription?: string;
+    avatarUrl?: string;
+    socialLinks?: Record<string, string>;
+    isPublic: boolean;
+}) => {
+    const res = await api.post("/api/User/profile", {
+        ...data,
+        socialLinks: data.socialLinks
+            ? JSON.stringify(data.socialLinks)
+            : null,
+    });
+
     return res.data;
 };
+
 
 export const updateProfile = async (profileData: any) => {
     const res = await api.put("/api/User/profile", profileData);

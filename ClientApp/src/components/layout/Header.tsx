@@ -6,7 +6,7 @@ import { useState } from 'react';
 import iskconLogo from '@/assets/iskcon-logo.png';
 
 export const Header = () => {
-  const { user, signOut, isAdmin, isDevotee } = useAuth();
+  const { user, signOut, isSuperAdmin, isAdmin, isDevotee } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -64,7 +64,7 @@ export const Header = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
-              {isAdmin && (
+              {(isAdmin || isSuperAdmin) && (
                 <Button variant="subtle" size="sm" asChild>
                   <Link to="/admin">
                     <Shield className="h-4 w-4 mr-1" />

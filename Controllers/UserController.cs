@@ -78,6 +78,27 @@ namespace DevoteesAnusanga.Controllers
             });
         }
 
+        [Authorize]
+        [HttpPost("profile")]
+        public async Task<IActionResult> CreateProfile([FromBody] CreateUserProfile dto)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var email = User.FindFirstValue(ClaimTypes.Email);
+
+            var existing = _db.GetUserProfileByUserId(userId);
+            if (existing != null)
+                return BadRequest("Profile already exists");
+
+            // 🔑 DEFAULT FALLBACKS
+            dto.Name ??= email;                // safe placeholder
+            dto.Email ??= email;
+            dto.IsPublic ??= true;
+            dto.RoleId ??= 4;                  // Devotee
+
+            await _db.CreateUserProfileAsync(userId, dto);
+
+            return Ok(new { message = "Profile created successfully" });
+        }
 
         [HttpGet("Profile")]
         public IActionResult GetMyProfile(Guid userId)
@@ -88,6 +109,17 @@ namespace DevoteesAnusanga.Controllers
                 return NotFound("Profile not found");
 
             return Ok(profile);
+        }
+
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            await _profileService.UpdateProfileAsync(userId, dto);
+
+            return Ok(new { message = "Profile updated successfully" });
         }
 
         [Authorize]
@@ -106,17 +138,6 @@ namespace DevoteesAnusanga.Controllers
             await _db.UpdateProfilePicAsync(userId, imageUrl);
 
             return Ok(new { avatarUrl = imageUrl });
-        }
-
-        [Authorize]
-        [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
-        {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            await _profileService.UpdateProfileAsync(userId, dto);
-
-            return Ok(new { message = "Profile updated successfully" });
         }
 
         [Authorize]

@@ -199,17 +199,45 @@ namespace DevoteesAnusanga.Helper
             {
                 Id = reader.GetGuid(reader.GetOrdinal("id")),
                 UserId = reader.GetGuid(reader.GetOrdinal("user_id")),
-                Name = reader.GetString(reader.GetOrdinal("name")),
-                Email = reader.GetString(reader.GetOrdinal("email")),
-                Phone = reader.GetString(reader.GetOrdinal("phone")),
-                Country = reader.GetString(reader.GetOrdinal("country")),
-                City = reader.GetString(reader.GetOrdinal("city")),
-                MissionDescription = reader.GetString(reader.GetOrdinal("mission_description")),
-                AvatarUrl = reader.IsDBNull("avatar_url") ? null : reader.GetString(reader.GetOrdinal("avatar_url")),
-                SocialLinks = reader.IsDBNull("social_links") ? null : reader.GetString(reader.GetOrdinal("social_links")),
+                Name = reader.IsDBNull(reader.GetOrdinal("name"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("name")),
+
+                Email = reader.IsDBNull(reader.GetOrdinal("email"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("email")),
+
+                Phone = reader.IsDBNull(reader.GetOrdinal("phone"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("phone")),
+
+                Country = reader.IsDBNull(reader.GetOrdinal("country"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("country")),
+
+                City = reader.IsDBNull(reader.GetOrdinal("city"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("city")),
+
+                MissionDescription = reader.IsDBNull(reader.GetOrdinal("mission_description"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("mission_description")),
+
+                AvatarUrl = reader.IsDBNull(reader.GetOrdinal("avatar_url"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("avatar_url")),
+
+                SocialLinks = reader.IsDBNull(reader.GetOrdinal("social_links"))
+            ? null
+            : reader.GetString(reader.GetOrdinal("social_links")),
+
                 IsPublic = reader.GetBoolean(reader.GetOrdinal("is_public")),
                 RoleId = reader.GetInt32(reader.GetOrdinal("role_id")),
-                AgreedToTermsAt = reader.IsDBNull("agreed_to_terms_at") ? null : reader.GetDateTime(reader.GetOrdinal("agreed_to_terms_at")),
+
+                AgreedToTermsAt = reader.IsDBNull(reader.GetOrdinal("agreed_to_terms_at"))
+            ? null
+            : reader.GetDateTime(reader.GetOrdinal("agreed_to_terms_at")),
+
                 CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
                 UpdatedAt = reader.GetDateTime(reader.GetOrdinal("updated_at"))
             };
@@ -258,6 +286,32 @@ namespace DevoteesAnusanga.Helper
 
             return countries;
         }
+
+        // ==================================================================== [ Profile Creation Starts Here]
+        public async Task CreateUserProfileAsync(Guid userId, CreateUserProfile dto)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("CreateUserProfile", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@Name", (object?)dto.Name ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Email", (object?)dto.Email ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Phone", (object?)dto.Phone ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Country", (object?)dto.Country ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@City", (object?)dto.City ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@MissionDescription", (object?)dto.MissionDescription ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@AvatarUrl", (object?)dto.AvatarUrl ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@SocialLinks", (object?)dto.SocialLinks ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@IsPublic", dto.IsPublic);
+            cmd.Parameters.AddWithValue("@RoleId", dto.RoleId);
+
+            conn.Open();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // ==================================================================== [ Profile Creation Ends Here]
 
         // ==================================================================== [ Profile Photo Update Starts Here]
         public async Task UpdateProfilePicAsync(Guid userId, string avatarUrl)

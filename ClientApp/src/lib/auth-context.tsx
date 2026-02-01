@@ -30,6 +30,7 @@ interface AuthContextType {
     profile: UserProfile | null;
     loading: boolean;
     hasProfile: boolean;
+    refreshProfile: () => Promise<void>; 
     signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
     signUp: (
         email: string,
@@ -37,6 +38,7 @@ interface AuthContextType {
         name: string
     ) => Promise<{ error: Error | null }>;
     signOut: () => void;
+    isSuperAdmin: boolean;
     isAdmin: boolean;
     isDevotee: boolean;
 }
@@ -65,6 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Backend already decides everything
         setUser(data.userDetails);        // includes hasProfile
         setProfile(data.userProfile);     // null if hasProfile === 0
+    };
+
+    const refreshProfile = async () => {
+        await loadProfile();
     };
 
     /* =======================
@@ -155,9 +161,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     /* =======================
        DERIVED VALUES
     ======================= */
-    const hasProfile = user?.hasProfile === 1;
-    const isAdmin = user?.userRoleID === 1;
-    const isDevotee = user?.userRoleID === 2 || isAdmin;
+    const hasProfile = Boolean(profile);
+    const isSuperAdmin = user?.userRoleID === 1;
+    const isAdmin = user?.userRoleID === 2;
+    const isDevotee =
+        user?.userRoleID === 3
+            ? true
+            : user?.userRoleID === 2
+                ? isAdmin
+                : isSuperAdmin;
 
     return (
         <AuthContext.Provider
@@ -166,9 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 profile,
                 loading,
                 hasProfile,
+                refreshProfile,
                 signIn,
                 signUp,
                 signOut,
+                isSuperAdmin,
                 isAdmin,
                 isDevotee,
             }}

@@ -38,7 +38,8 @@ import {
 
 const profileSchema = z.object({
   name: z.string().trim().max(100).optional().or(z.literal('')),
-  country: z.string().min(1, 'Country is required'),
+  //country: z.string().min(1, 'Country is required'),
+  country: z.string().optional().or(z.literal('')),
   city: z.string().trim().max(100).optional().or(z.literal('')),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   phone: z.string().max(20).optional().or(z.literal('')),
@@ -50,7 +51,7 @@ const profileSchema = z.object({
 });
 
 const Profile = () => {
-    const { user, profile, hasProfile, loading: authLoading, signOut, refreshProfile } = useAuth();
+    const { user, profile, hasProfile, refreshProfile, loading: authLoading, signOut, refreshProfile } = useAuth();
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +152,8 @@ const Profile = () => {
                 facebook: socialLinks.facebook ?? '',
                 instagram: socialLinks.instagram ?? '',
             });
+        } catch {
+            // ✅ No profile yet — this is OK
         } finally {
             setLoading(false);
         }
@@ -242,9 +245,13 @@ const Profile = () => {
         };
 
         try {
-            hasProfile
-                ? await updateProfile(profileData)
-                : await createProfile(profileData);
+            if (hasProfile) {
+                await updateProfile(profileData);
+            } else {
+                await createProfile(profileData);
+            }
+
+            await refreshProfile(); // 🔥 REQUIRED
 
             toast.success("Profile saved successfully!");
         } catch {
@@ -254,7 +261,7 @@ const Profile = () => {
         }
 
         // ⬇️ refresh OUTSIDE try/catch
-        await refreshProfile();
+        //await refreshProfile();
     };
 
 

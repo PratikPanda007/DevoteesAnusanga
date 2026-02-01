@@ -31,6 +31,7 @@ interface AuthContextType {
     loading: boolean;
     hasProfile: boolean;
     refreshProfile: () => Promise<void>; 
+    markHasProfile: () => void;
     signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
     signUp: (
         email: string,
@@ -72,6 +73,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const refreshProfile = async () => {
         await loadProfile();
     };
+
+    const markHasProfile = () => {
+        setUser(prev =>
+            prev ? { ...prev, hasProfile: 1 } : prev
+        );
+    };
+
 
     /* =======================
        AUTO LOGIN
@@ -179,6 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 loading,
                 hasProfile,
                 refreshProfile,
+                markHasProfile,
                 signIn,
                 signUp,
                 signOut,

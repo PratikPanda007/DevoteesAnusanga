@@ -51,7 +51,7 @@ const profileSchema = z.object({
 });
 
 const Profile = () => {
-    const { user, profile, hasProfile, refreshProfile, loading: authLoading, signOut, refreshProfile } = useAuth();
+    const { user, profile, hasProfile, refreshProfile, markHasProfile, loading: authLoading, signOut } = useAuth();
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,11 +249,17 @@ const Profile = () => {
                 await updateProfile(profileData);
             } else {
                 await createProfile(profileData);
+
+                markHasProfile();
+
             }
 
             await refreshProfile(); // 🔥 REQUIRED
 
             toast.success("Profile saved successfully!");
+            setTimeout(() => {
+                navigate("/directory");
+            }, 2000);
         } catch {
             toast.error("Failed to save profile");
         } finally {

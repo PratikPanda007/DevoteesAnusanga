@@ -391,5 +391,45 @@ namespace DevoteesAnusanga.Helper
         }
 
         // ==================================================================== [ Toggling Profile Visibility Ends Here]
+
+        // ==================================================================== [ Public Profiles Starts Here]
+        public async Task<List<DirectoryProfiles>> GetActivePublicProfilesAsync()
+        {
+            var result = new List<DirectoryProfiles>();
+
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetPublicDirectoryProfiles", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await conn.OpenAsync();
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add(new DirectoryProfiles
+                {
+                    ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
+                    UserId = reader.GetGuid(reader.GetOrdinal("UserId")),
+
+                    Name = reader["name"].ToString()!,
+                    Email = reader["email"] as string,
+                    Phone = reader["phone"] as string,
+
+                    Country = reader["country"].ToString()!,
+                    City = reader["city"] as string,
+
+                    MissionDescription = reader["mission_description"] as string,
+                    AvatarUrl = reader["avatar_url"] as string,
+
+                    SocialLinks = reader["social_links"] as string,
+                    RoleId = Convert.ToInt32(reader["role_id"])
+                });
+            }
+
+            return result;
+        }
+
+        // ==================================================================== [ Public Profiles Ends Here]
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DevoteesAnusanga.Models;
 using DevoteesAnusanga.Helper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DevoteesAnusanga.Controllers
 {
@@ -46,6 +47,16 @@ namespace DevoteesAnusanga.Controllers
             var countries = _db.GetAllCountries();
             return Ok(countries);
         }
+
+        [Authorize]
+        [HttpGet("active-directory")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+        public async Task<IActionResult> GetActiveDirectory()
+        {
+            var result = await _db.GetActivePublicProfilesAsync();
+            return Ok(result);
+        }
+
     }
 
 }

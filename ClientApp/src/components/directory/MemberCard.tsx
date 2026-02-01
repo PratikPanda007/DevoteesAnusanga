@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Role IDs from the roles table
 const ROLE_IDS = {
-  BASIC: 1,
-  DEVOTEE: 2,
-  ADMIN: 3,
+  SUPERADMIN: 1,
+  ADMIN: 2,
+  DEVOTEE: 3,
+  BASIC: 4,
 } as const;
 
 interface SocialLinks {
@@ -45,6 +46,8 @@ export const MemberCard = ({
 
   const getRoleBadge = () => {
     switch (roleId) {
+        case ROLE_IDS.SUPERADMIN:
+            return <Badge variant="default" className="bg-primary text-primary-foreground">Super Admin</Badge>;
       case ROLE_IDS.ADMIN:
         return <Badge variant="default" className="bg-primary text-primary-foreground">Admin</Badge>;
       case ROLE_IDS.BASIC:

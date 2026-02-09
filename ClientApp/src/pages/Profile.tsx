@@ -52,6 +52,7 @@ const profileSchema = z.object({
 
 const Profile = () => {
     const { user, profile, hasProfile, refreshProfile, markHasProfile, loading: authLoading, signOut } = useAuth();
+    const isTempPassword = user?.isTempPassword === 1;
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -319,6 +320,23 @@ const Profile = () => {
     <Layout>
       <div className="container px-4 md:px-8 py-8 md:py-12">
         <div className="max-w-2xl mx-auto">
+            {isTempPassword && (
+                <Card className="border-destructive bg-destructive/5 mb-6">
+                    <CardContent className="pt-6">
+                        <p className="font-semibold text-destructive">
+                            Temporary Password Active
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            You are signed in using a temporary password.
+                            Please change your password below to continue using your account.
+                        </p>
+                        <p>
+                            Once Password Updated, please sign-out and re-login for smooth experience.
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
+
           <div className="mb-8">
             <h1 className="font-serif text-3xl md:text-4xl font-semibold text-foreground mb-2">
               {hasProfile ? 'Edit Your Profile' : 'Create Your Profile'}
@@ -369,7 +387,7 @@ const Profile = () => {
                       type="button"
                       variant="outline"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingAvatar}
+                      disabled={uploadingAvatar || isTempPassword}
                     >
                       {uploadingAvatar ? 'Uploading...' : 'Choose Photo'}
                     </Button>
@@ -559,7 +577,7 @@ const Profile = () => {
               </CardContent>
             </Card>
 
-            <Button type="submit" size="lg" className="w-full" disabled={saving}>
+            <Button type="submit" size="lg" className="w-full" disabled={saving || isTempPassword}>
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -571,7 +589,7 @@ const Profile = () => {
             </Button>
 
             {/* Change Password */}
-            {hasProfile && <ChangePasswordSection />}
+            {hasProfile && <ChangePasswordSection forceOpen={isTempPassword} />}
 
             {/* Disable Profile */}
             {hasProfile && (
@@ -641,6 +659,7 @@ const Profile = () => {
                       type="button"
                       variant="destructive"
                       onClick={handleDeleteClick}
+                      disabled={isTempPassword}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete

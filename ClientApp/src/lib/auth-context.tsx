@@ -15,7 +15,8 @@ export interface User {
     userRoleID: number;
     roleName: string;
     isActive: boolean;
-    hasProfile: number; // 👈 REQUIRED (0 | 1)
+    hasProfile: number;
+    isTempPassword: number;
 }
 
 interface JwtPayload {
@@ -42,6 +43,7 @@ interface AuthContextType {
     isSuperAdmin: boolean;
     isAdmin: boolean;
     isDevotee: boolean;
+    mustChangePassword: boolean;
 }
 
 /* =======================
@@ -58,6 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const mustChangePassword = user?.isTempPassword === 1;
 
     /* =======================
        FETCH USER + PROFILE
@@ -194,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 isSuperAdmin,
                 isAdmin,
                 isDevotee,
+                mustChangePassword,
             }}
         >
             {children}

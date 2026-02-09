@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,10 @@ import { toast } from 'sonner';
 import { Mail, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 import { z } from 'zod';
 
-const DUMMY_OTP = '123456';
+import {
+    requestPasswordOtp,
+    verifyPasswordOtp,
+} from '@/lib/otp-api';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address');
 
@@ -36,48 +39,55 @@ export const ForgotPasswordDialog = ({ open, onOpenChange }: ForgotPasswordDialo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleRequestOtp = async () => {
-    setError('');
-    
-    const result = emailSchema.safeParse(email);
-    if (!result.success) {
-      setError(result.error.errors[0].message);
-      return;
-    }
+    const handleRequestOtp = async () => {
+        setError('');
 
-    setLoading(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    setLoading(false);
-    toast.success(`OTP sent to ${email}. Please check your inbox.`);
-    setStep('otp');
-  };
+        const result = emailSchema.safeParse(email);
+        if (!result.success) {
+            setError(result.error.errors[0].message);
+            return;
+        }
 
-  const handleVerifyOtp = async () => {
-    setError('');
-    
-    if (otp.length !== 6) {
-      setError('Please enter the complete 6-digit OTP');
-      return;
-    }
+        try {
+            setLoading(true);
+            await requestPasswordOtp(email);
+            toast.success(`OTP sent to ${email}`);
+            setStep('otp');
+        } catch (err: any) {
+            setError(err?.response?.data?.message || 'Failed to send OTP');
+            toast.error('Failed to send OTP');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    setLoading(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    setLoading(false);
 
-    if (otp === DUMMY_OTP) {
-      setStep('success');
-      toast.success('OTP verified successfully!');
-    } else {
-      setError('Invalid OTP. Please try again.');
-      toast.error('Invalid OTP. Please try again.');
-    }
-  };
+    const handleVerifyOtp = async () => {
+        setError('');
+
+        if (otp.length !== 6) {
+            setError('Please enter the complete 6-digit OTP');
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const { resetToken } = await verifyPasswordOtp(email, otp);
+
+            // 🔐 store reset token temporarily
+            sessionStorage.setItem('resetToken', resetToken);
+            sessionStorage.setItem('resetEmail', email);
+
+            toast.success('OTP verified successfully!');
+            setStep('success');
+        } catch (err: any) {
+            setError(err?.response?.data?.message || 'Invalid OTP');
+            toast.error('Invalid OTP');
+        } finally {
+            setLoading(false);
+        }
+    };
 
   const handleClose = () => {
     // Reset state when closing

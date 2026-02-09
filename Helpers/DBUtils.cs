@@ -82,6 +82,75 @@ namespace DevoteesAnusanga.Helper
         }
 
         // ==================================================================================== [ User Registration Ends Here ]
+
+        // ==================================================================================== [ Forgot Password Starts Here ]
+        public async Task CreatePasswordOtpAsync(Guid userId, string otpHash, DateTime expiresAt)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("CreatePasswordOtp", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@OtpHash", otpHash);
+            cmd.Parameters.AddWithValue("@ExpiresAt", expiresAt);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+
+        public async Task<PasswordOtp?> GetValidPasswordOtpAsync(Guid userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetValidPasswordOtp", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!reader.Read())
+                return null;
+
+            return new PasswordOtp
+            {
+                Id = reader.GetGuid(reader.GetOrdinal("id")),
+                UserId = reader.GetGuid(reader.GetOrdinal("user_id")),
+                OtpHash = reader.GetString(reader.GetOrdinal("otp_hash")),
+                ExpiresAt = reader.GetDateTime(reader.GetOrdinal("expires_at"))
+            };
+        }
+
+
+        public async Task MarkPasswordOtpUsedAsync(Guid otpId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("MarkPasswordOtpUsed", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@OtpId", otpId);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task UpdateUserPasswordAsync(Guid userId, string passwordHash)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdateForgetUserPassword", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+
+        // ==================================================================================== [ Forgot Password Ends Here ]
+
         // =========================================================================================== [ User Creds Starts Here ]
 
         public UserModel AuthenticateUser(string email)
@@ -104,7 +173,8 @@ namespace DevoteesAnusanga.Helper
                 Name = reader.GetString(reader.GetOrdinal("name")),
                 UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
                 RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
-                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                IsTempPassword = Convert.ToInt32(reader["IsTempPassword"]),
             };
         }
 
@@ -132,6 +202,7 @@ namespace DevoteesAnusanga.Helper
                     UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
                     RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
                     IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                    IsTempPassword = reader.GetInt32(reader.GetOrdinal("IsTempPassword")),
                     Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                     Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at")),
                 });
@@ -177,10 +248,33 @@ namespace DevoteesAnusanga.Helper
                 RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
                 HasProfile = reader.GetInt32(reader.GetOrdinal("hasProfile")),
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                IsTempPassword = Convert.ToInt32(reader["IsTempPassword"]),
                 Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                 Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at")),
             };
         }
+
+        public async Task<UserModel> GetUserDetailsByEmailAsync(string email)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetUserDetailsByEmail", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Email", email);
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!reader.Read()) return null;
+
+            return new UserModel
+            {
+                Id = reader.GetGuid(reader.GetOrdinal("id")),
+                Email = reader.GetString(reader.GetOrdinal("email")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                IsTempPassword = Convert.ToInt32(reader["IsTempPassword"]),
+            };
+        }
+
 
         public UserProfile GetUserProfileByUserId(Guid profileId)
         {

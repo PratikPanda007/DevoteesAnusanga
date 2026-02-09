@@ -17,6 +17,9 @@ const passwordSchema = z.object({
   message: "Passwords don't match",
   path: ['confirmPassword'],
 });
+interface Props {
+    forceOpen?: boolean;
+}
 
 const ChangePasswordSection = () => {
   const [formData, setFormData] = useState({

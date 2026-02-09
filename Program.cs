@@ -17,6 +17,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<AzureBlobService>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddSwaggerGen(c =>
 {

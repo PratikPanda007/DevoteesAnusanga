@@ -11,6 +11,7 @@
         public string RoleName { get; set; }
         public int HasProfile { get; set; }
         public bool IsActive { get; set; }
+        public int IsTempPassword { get; set; }
         public DateTime Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
     }

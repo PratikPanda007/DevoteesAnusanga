@@ -14,11 +14,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth-context';
-import { api } from '@/lib/mock-api';
+//import { api } from '@/lib/mock-api';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Send, Loader2, ArrowLeft, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createAnnouncement } from "@/lib/announcements-api";
 
 const announcementSchema = z.object({
   title: z.string().trim().min(5, 'Title must be at least 5 characters').max(100),
@@ -35,7 +36,7 @@ const categories = [
 ];
 
 const NewAnnouncement = () => {
-  const { user, isDevotee, isAdmin, loading: authLoading } = useAuth();
+    const { user, isDevotee, isAdmin, isSuperAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState('');
@@ -68,30 +69,42 @@ const NewAnnouncement = () => {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) return;
-    if (!validateForm()) {
-      toast.error('Please fix the errors before submitting.');
-      return;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    setSubmitting(true);
+        if (!user) return;
 
-    await api.createAnnouncement({
-      user_id: user.id,
-      title: title.trim(),
-      content: content.trim(),
-      category,
-      status: isAdmin ? 'approved' : 'pending',
-    });
+        if (!validateForm()) {
+            toast.error("Please fix the errors before submitting.");
+            return;
+        }
 
-    toast.success(isAdmin ? 'Announcement published!' : 'Announcement submitted for review!');
-    navigate('/announcements');
+        try {
+            setSubmitting(true);
 
-    setSubmitting(false);
-  };
+            await createAnnouncement({
+                title: title.trim(),
+                content: content.trim(),
+                category,
+            });
+
+            toast.success(
+                isAdmin || isSuperAdmin
+                    ? "Announcement published!"
+                    : "Announcement submitted for review!"
+            );
+
+            navigate("/announcements");
+        } catch (error: any) {
+            console.error(error);
+            toast.error(
+                error?.response?.data?.message || "Failed to create announcement"
+            );
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
 
   if (authLoading) {
     return (
@@ -123,7 +136,7 @@ const NewAnnouncement = () => {
             </p>
           </div>
 
-          {!isAdmin && (
+          {!isAdmin || !isSuperAdmin && (
             <Card className="elevated-card mb-6">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-sage-light/50 border border-primary/20">

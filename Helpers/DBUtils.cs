@@ -525,5 +525,90 @@ namespace DevoteesAnusanga.Helper
         }
 
         // ==================================================================== [ Public Profiles Ends Here]
+
+        // ==================================================================== [ Announcements Starts Here]
+        public async Task CreateAnnouncementAsync(Guid userId, string title, string content, string category)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("CreateAnnouncement", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@Title", title);
+            cmd.Parameters.AddWithValue("@Content", content);
+            cmd.Parameters.AddWithValue("@Category", category);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<Announcement>> GetApprovedAnnouncementsAsync()
+        {
+            var list = new List<Announcement>();
+
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetApprovedAnnouncements", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Announcement
+                {
+                    Id = reader.GetGuid(0),
+                    UserId = reader.GetGuid(1),
+                    Title = reader.GetString(2),
+                    Content = reader.GetString(3),
+                    Category = reader.GetString(4),
+                    CreatedAt = reader.GetDateTime(5)
+                });
+            }
+
+            return list;
+        }
+
+        public async Task<List<Announcement>> GetPendingAnnouncements()
+        {
+            var list = new List<Announcement>();
+
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetPendingAnnouncements", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Announcement
+                {
+                    Id = reader.GetGuid(0),
+                    UserId = reader.GetGuid(1),
+                    Title = reader.GetString(2),
+                    Content = reader.GetString(3),
+                    Category = reader.GetString(4),
+                    CreatedAt = reader.GetDateTime(5)
+                });
+            }
+
+            return list;
+        }
+        public async Task ReviewAnnouncementAsync(Guid announcementId, Guid adminId, int approvalStatus)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("ReviewAnnouncement", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@AnnouncementId", announcementId);
+            cmd.Parameters.AddWithValue("@AdminId", adminId);
+            cmd.Parameters.AddWithValue("@ApprovalStatus", approvalStatus);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // ==================================================================== [ Announcements Ends Here]
     }
 }

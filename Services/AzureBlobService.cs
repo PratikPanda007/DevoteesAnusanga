@@ -41,5 +41,30 @@ namespace DevoteesAnusanga.Services
 
             return blobClient.Uri.ToString();
         }
+
+        public async Task<string> UploadAnnouncementImageAsync(IFormFile file)
+        {
+            await _container.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+            var fileExt = Path.GetExtension(file.FileName);
+            var blobName = $"announcements/{Guid.NewGuid()}{fileExt}";
+            var blobClient = _container.GetBlobClient(blobName);
+
+            using var stream = file.OpenReadStream();
+
+            await blobClient.UploadAsync(
+                stream,
+                new BlobUploadOptions
+                {
+                    HttpHeaders = new BlobHttpHeaders
+                    {
+                        ContentType = file.ContentType
+                    }
+                }
+            );
+
+            return blobClient.Uri.ToString();
+        }
+
     }
 }

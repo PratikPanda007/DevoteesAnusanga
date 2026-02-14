@@ -79,10 +79,10 @@ const Announcements = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                         <CardTitle className="text-lg">
-                            {announcement.title}
+                            TItle: {announcement.title}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
-                            <span className="capitalize">{announcement.category}</span>
+                            Category: <span className="capitalize">{announcement.category}</span>
                         </CardDescription>
                     </div>
 
@@ -92,7 +92,7 @@ const Announcements = () => {
 
             <CardContent>
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                    {announcement.content}
+                    Content: {announcement.content}
                 </p>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

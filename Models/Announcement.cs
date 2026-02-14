@@ -7,6 +7,7 @@
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; } = string.Empty;
         public int ApprovalStatus { get; set; }
         public Guid? ApprovedBy { get; set; }
         public DateTime? ApprovedOn { get; set; }

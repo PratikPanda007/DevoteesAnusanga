@@ -192,21 +192,62 @@ namespace DevoteesAnusanga.Helper
 
             while (reader.Read())
             {
+                // Get ordinals first
+                int idOrdinal = reader.GetOrdinal("id");
+                int emailOrdinal = reader.GetOrdinal("email");
+                int nameOrdinal = reader.GetOrdinal("name");
+                int emailVerifiedOrdinal = reader.GetOrdinal("email_verified");
+                int userRoleIdOrdinal = reader.GetOrdinal("UserRoleId");
+                int roleNameOrdinal = reader.GetOrdinal("RoleName");
+                int hasProfileOrdinal = reader.GetOrdinal("HasProfile");
+                int isProfilePublicOrdinal = reader.GetOrdinal("IsProfilePublic");
+                int isActiveOrdinal = reader.GetOrdinal("IsActive");
+                int isTempPasswordOrdinal = reader.GetOrdinal("IsTempPassword");
+                int createdAtOrdinal = reader.GetOrdinal("created_at");
+                int updatedAtOrdinal = reader.GetOrdinal("updated_at");
+
+                // Read values separately (easy to breakpoint here)
+
+                Guid id = reader.GetGuid(idOrdinal);
+                string email = reader.GetString(emailOrdinal);
+                string name = reader.GetString(nameOrdinal);
+                bool emailVerified = reader.GetBoolean(emailVerifiedOrdinal);
+                int userRoleId = reader.GetInt32(userRoleIdOrdinal);
+                string roleName = reader.GetString(roleNameOrdinal);
+                int hasProfile = reader.GetInt32(hasProfileOrdinal);
+
+                int? isProfilePublic = reader.IsDBNull(isProfilePublicOrdinal)
+                ? (int?)null
+                : (reader.GetBoolean(isProfilePublicOrdinal) ? 1 : 0);
+
+                bool isActive = reader.GetBoolean(isActiveOrdinal);
+
+                int isTempPassword = reader.GetBoolean(isTempPasswordOrdinal) ? 1 : 0;
+
+                DateTime createdAt = reader.GetDateTime(createdAtOrdinal);
+
+                DateTime? updatedAt = reader.IsDBNull(updatedAtOrdinal)
+                    ? (DateTime?)null
+                    : reader.GetDateTime(updatedAtOrdinal);
+
+                // Now create model
                 users.Add(new UserModel
                 {
-                    Id = reader.GetGuid(reader.GetOrdinal("id")),
-                    Email = reader.GetString(reader.GetOrdinal("email")),
-                    //Password_Hash = reader.GetString(reader.GetOrdinal("password_hash")),
-                    Name = reader.GetString(reader.GetOrdinal("name")),
-                    Email_Verified = reader.GetBoolean(reader.GetOrdinal("email_verified")),
-                    UserRoleID = reader.GetInt32(reader.GetOrdinal("UserRoleId")),
-                    RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
-                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                    IsTempPassword = reader.GetInt32(reader.GetOrdinal("IsTempPassword")),
-                    Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
-                    Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at")),
+                    Id = id,
+                    Email = email,
+                    Name = name,
+                    Email_Verified = emailVerified,
+                    UserRoleID = userRoleId,
+                    RoleName = roleName,
+                    HasProfile = hasProfile,
+                    IsProfilePublic = isProfilePublic,
+                    IsActive = isActive,
+                    IsTempPassword = isTempPassword,
+                    Created_At = createdAt,
+                    Updated_At = updatedAt
                 });
             }
+
 
             return users;
         }
@@ -527,19 +568,27 @@ namespace DevoteesAnusanga.Helper
         // ==================================================================== [ Public Profiles Ends Here]
 
         // ==================================================================== [ Announcements Starts Here]
-        public async Task CreateAnnouncementAsync(Guid userId, string title, string content, string category)
+        public async Task CreateAnnouncementAsync(Guid userId, string title, string content, string category, string imageUrl)
         {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("CreateAnnouncement", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            try
+            {
+                using var conn = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("CreateAnnouncement", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@Title", title);
-            cmd.Parameters.AddWithValue("@Content", content);
-            cmd.Parameters.AddWithValue("@Category", category);
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                cmd.Parameters.AddWithValue("@Title", title);
+                cmd.Parameters.AddWithValue("@Content", content);
+                cmd.Parameters.AddWithValue("@Category", category);
+                cmd.Parameters.AddWithValue("@ImageUrl", imageUrl);
 
-            await conn.OpenAsync();
-            await cmd.ExecuteNonQueryAsync();
+                await conn.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("=================== [ 549 ] \n "+ ex.Message);
+            }
         }
 
         public async Task<List<Announcement>> GetApprovedAnnouncementsAsync()
@@ -562,7 +611,8 @@ namespace DevoteesAnusanga.Helper
                     Title = reader.GetString(2),
                     Content = reader.GetString(3),
                     Category = reader.GetString(4),
-                    CreatedAt = reader.GetDateTime(5)
+                    CreatedAt = reader.GetDateTime(5),
+                    ImageUrl = Convert.ToString(reader.GetValue(6)) ?? string.Empty,
                 });
             }
 

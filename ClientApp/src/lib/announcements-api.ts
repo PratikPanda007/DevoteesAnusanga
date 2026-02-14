@@ -8,6 +8,7 @@ export interface CreateAnnouncement {
     title: string;
     content: string;
     category: string;
+    imageUrl?: string;
 }
 
 export interface ReviewAnnouncement {
@@ -21,6 +22,7 @@ export interface Announcement {
     title: string;
     content: string;
     category: string;
+    imageUrl: string;
     createdBy: string;
     createdOn: string;
     approvalStatus: number;
@@ -33,11 +35,49 @@ export interface Announcement {
 ================================= */
 
 // Create Announcement
+//export const createAnnouncement = async (
+//    data: CreateAnnouncement
+//) => {
+//    const response = await api.post("/api/announcements", data);
+//    return response.data;
+//};
+
 export const createAnnouncement = async (
     data: CreateAnnouncement
 ) => {
-    const response = await api.post("/api/announcements", data);
+    const formData = new FormData();
+
+    formData.append("Title", data.title);
+    formData.append("Content", data.content);
+    formData.append("Category", data.category);
+
+    if (data.imageUrl) {
+        formData.append("ImageUrl", data.imageUrl);
+    }
+
+    const response = await api.post(
+        "/api/announcements",
+        formData,
+    );
+
     return response.data;
+};
+
+export const uploadAnnouncementImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post(
+        "/api/announcements/upload-image",
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        }
+    );
+
+    return response.data.imageUrl;
 };
 
 // Get Approved Announcements (Public View)

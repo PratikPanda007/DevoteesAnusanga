@@ -30,6 +30,7 @@ interface AnnouncementDto {
     title: string;
     content: string;
     category: string;
+    imageUrl: string;
     createdAt: string;
     approvalStatus: number;
     approvedBy?: string | null;
@@ -180,6 +181,7 @@ const Announcements = () => {
                                     className="elevated-card animate-slide-up"
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                 >
+                                    {/* Image Section */}
                                     <CardHeader className="pb-3">
                                         <div className="flex justify-between gap-3">
                                             <CardTitle className="font-serif text-xl">
@@ -193,6 +195,17 @@ const Announcements = () => {
                                             </Badge>
                                         </div>
                                     </CardHeader>
+
+                                    {announcement.imageUrl && (
+                                        <div className="w-full aspect-video overflow-hidden">
+                                            <img
+                                                src={announcement.imageUrl}
+                                                alt={announcement.title}
+                                                className="w-full h-full object-contain bg-black/5 "
+                                            />
+                                        </div>
+                                    )}
+                                    <br />
 
                                     <CardContent>
                                         <p className="text-muted-foreground whitespace-pre-wrap">

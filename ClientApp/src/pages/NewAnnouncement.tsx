@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Send, Loader2, ArrowLeft, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createAnnouncement } from "@/lib/announcements-api";
+import { createAnnouncement, uploadAnnouncementImage } from "@/lib/announcements-api";
 
 const announcementSchema = z.object({
   title: z.string().trim().min(5, 'Title must be at least 5 characters').max(100),
@@ -43,7 +43,14 @@ const NewAnnouncement = () => {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [imageFile, setImageFile] = useState<File | null>(null);
+
+    const handleFileChange = (e: any) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,6 +76,43 @@ const NewAnnouncement = () => {
     return true;
   };
 
+    //const handleSubmit = async (e: React.FormEvent) => {
+    //    e.preventDefault();
+
+    //    if (!user) return;
+
+    //    if (!validateForm()) {
+    //        toast.error("Please fix the errors before submitting.");
+    //        return;
+    //    }
+
+    //    try {
+    //        setSubmitting(true);
+
+    //        await createAnnouncement({
+    //            title: title.trim(),
+    //            content: content.trim(),
+    //            category,
+    //            image: imageFile || undefined
+    //        });
+
+    //        toast.success(
+    //            isAdmin || isSuperAdmin
+    //                ? "Announcement published!"
+    //                : "Announcement submitted for review!"
+    //        );
+
+    //        navigate("/announcements");
+    //    } catch (error: any) {
+    //        console.error(error);
+    //        toast.error(
+    //            error?.response?.data?.message || "Failed to create announcement"
+    //        );
+    //    } finally {
+    //        setSubmitting(false);
+    //    }
+    //};
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -82,29 +126,32 @@ const NewAnnouncement = () => {
         try {
             setSubmitting(true);
 
+            let imageUrl = "";
+
+            // 👇 STEP 1: Upload image first (if exists)
+            if ((isAdmin || isSuperAdmin) && imageFile) {
+                imageUrl = await uploadAnnouncementImage(imageFile);
+            }
+
+            // 👇 STEP 2: Create announcement
             await createAnnouncement({
+                userId: user.id,
                 title: title.trim(),
                 content: content.trim(),
                 category,
+                imageUrl
             });
 
-            toast.success(
-                isAdmin || isSuperAdmin
-                    ? "Announcement published!"
-                    : "Announcement submitted for review!"
-            );
-
+            toast.success("Announcement created!");
             navigate("/announcements");
+
         } catch (error: any) {
             console.error(error);
-            toast.error(
-                error?.response?.data?.message || "Failed to create announcement"
-            );
+            toast.error("Failed to create announcement");
         } finally {
             setSubmitting(false);
         }
     };
-
 
   if (authLoading) {
     return (
@@ -206,6 +253,17 @@ const NewAnnouncement = () => {
                     <span>{content.length}/2000</span>
                   </div>
                 </div>
+
+                {(isAdmin || isSuperAdmin) && (
+                    <div>
+                        <label>Upload Image</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                    </div>
+                )}
 
                 <Button type="submit" size="lg" className="w-full" disabled={submitting}>
                   {submitting ? (

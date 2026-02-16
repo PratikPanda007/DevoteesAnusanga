@@ -9,7 +9,11 @@
         public bool Email_Verified { get; set; }
         public int UserRoleID { get; set; }
         public string RoleName { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
         public int HasProfile { get; set; }
+        public int? IsProfilePublic { get; set; }
+
         public bool IsActive { get; set; }
         public int IsTempPassword { get; set; }
         public DateTime Created_At { get; set; }

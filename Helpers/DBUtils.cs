@@ -214,6 +214,21 @@ namespace DevoteesAnusanga.Helper
                 bool emailVerified = reader.GetBoolean(emailVerifiedOrdinal);
                 int userRoleId = reader.GetInt32(userRoleIdOrdinal);
                 string roleName = reader.GetString(roleNameOrdinal);
+                int cityOrdinal = reader.GetOrdinal("City");
+
+                string city = reader.IsDBNull(cityOrdinal)
+                    ? string.Empty
+                    : reader.GetString(cityOrdinal);
+
+                int countryOrdinal = reader.GetOrdinal("Country");
+
+                string country = reader.IsDBNull(countryOrdinal)
+                    ? string.Empty
+                    : reader.GetString(countryOrdinal);
+
+                // string city = reader.IsDBNull("City")) ? String.Empty : reader.GetString("City");
+                //string country = reader.IsDBNull("Country")) ? String.Empty : reader.GetString("Country");
+                //string country = reader.GetString("");
                 int hasProfile = reader.GetInt32(hasProfileOrdinal);
 
                 int? isProfilePublic = reader.IsDBNull(isProfilePublicOrdinal)
@@ -239,6 +254,8 @@ namespace DevoteesAnusanga.Helper
                     Email_Verified = emailVerified,
                     UserRoleID = userRoleId,
                     RoleName = roleName,
+                    City = city,
+                    Country = country,
                     HasProfile = hasProfile,
                     IsProfilePublic = isProfilePublic,
                     IsActive = isActive,

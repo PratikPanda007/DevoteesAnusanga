@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth-context";
 import { DevoteeRoute } from "@/components/DevoteeRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { SuperAdminRoute } from "./components/SuperAdminRoute";
+
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -52,11 +54,11 @@ const App = () => (
             
             {/* Admin routes - requires admin role */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/users" element={<AdminRoute><AdminSearchUsers /></AdminRoute>} />
-            <Route path="/admin/users/add" element={<AdminRoute><AdminAddUser /></AdminRoute>} />
+            <Route path="/admin/users" element={<SuperAdminRoute><AdminSearchUsers /></SuperAdminRoute>} />
+            <Route path="/admin/users/add" element={<SuperAdminRoute><AdminAddUser /></SuperAdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-            <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-            <Route path="/admin/export" element={<AdminRoute><DataExport /></AdminRoute>} />
+            <Route path="/admin/settings" element={<SuperAdminRoute><AdminSettings /></SuperAdminRoute>} />
+            <Route path="/admin/export" element={<SuperAdminRoute><DataExport /></SuperAdminRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

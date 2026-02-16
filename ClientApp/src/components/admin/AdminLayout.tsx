@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { useAuth } from '@/lib/auth-context';
 import {
   LayoutDashboard,
   UserPlus,
@@ -20,15 +21,16 @@ interface AdminLayoutProps {
 
 const adminNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/admin/users', icon: Search, label: 'Search Users', end: false },
-  { to: '/admin/users/add', icon: UserPlus, label: 'Add User', end: false },
+  { to: '/admin/users', icon: Search, label: 'Search Users', end: false, superAdminOnly: true },
+  { to: '/admin/users/add', icon: UserPlus, label: 'Add User', end: false, superAdminOnly: true },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements', end: false },
-  { to: '/admin/settings', icon: Settings, label: 'Settings', end: false },
+  { to: '/admin/settings', icon: Settings, label: 'Settings', end: false, superAdminOnly: true },
 ];
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
+    const location = useLocation();
+    const { isSuperAdmin } = useAuth();
 
   const isActive = (path: string, end: boolean) => {
     if (end) {
@@ -66,7 +68,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
 
           <nav className="flex-1 p-2 space-y-1">
-            {adminNavItems.map((item) => (
+            {adminNavItems
+                .filter((item) => !item.superAdminOnly || isSuperAdmin)
+                .map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

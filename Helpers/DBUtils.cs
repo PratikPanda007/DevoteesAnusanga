@@ -245,24 +245,32 @@ namespace DevoteesAnusanga.Helper
                     ? (DateTime?)null
                     : reader.GetDateTime(updatedAtOrdinal);
 
-                // Now create model
-                users.Add(new UserModel
+                if(email == "pratic.panda@gmail.com")
                 {
-                    Id = id,
-                    Email = email,
-                    Name = name,
-                    Email_Verified = emailVerified,
-                    UserRoleID = userRoleId,
-                    RoleName = roleName,
-                    City = city,
-                    Country = country,
-                    HasProfile = hasProfile,
-                    IsProfilePublic = isProfilePublic,
-                    IsActive = isActive,
-                    IsTempPassword = isTempPassword,
-                    Created_At = createdAt,
-                    Updated_At = updatedAt
-                });
+
+                }
+                else
+                {
+
+                // Now create model
+                    users.Add(new UserModel
+                    {
+                        Id = id,
+                        Email = email,
+                        Name = name,
+                        Email_Verified = emailVerified,
+                        UserRoleID = userRoleId,
+                        RoleName = roleName,
+                        City = city,
+                        Country = country,
+                        HasProfile = hasProfile,
+                        IsProfilePublic = isProfilePublic,
+                        IsActive = isActive,
+                        IsTempPassword = isTempPassword,
+                        Created_At = createdAt,
+                        Updated_At = updatedAt
+                    });
+                }
             }
 
 

@@ -40,6 +40,25 @@ interface UserListDto {
     created_At: string;
 }
 
+export interface UserProfileDto {
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    country: string;
+    city: string;
+    missionDescription: string | null;
+    avatarUrl: string | null;
+    socialLinks: string | null; // JSON string
+    isPublic: boolean;
+    roleId: number;
+    agreedToTermsAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+
 const roles = [
     { id: 1, name: "Super Admin" },
     { id: 2, name: "Admin" },
@@ -51,10 +70,12 @@ const SearchUsers = () => {
     const [filteredMembers, setFilteredMembers] = useState<UserListDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedUser, setSelectedUser] = useState<UserListDto | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+
+    const [selectedProfile, setSelectedProfile] = useState<UserProfileDto | null>(null);
+    const [loadingProfile, setLoadingProfile] = useState(false);
 
     useEffect(() => {
         fetchMembers();
@@ -114,9 +135,26 @@ const SearchUsers = () => {
         setUpdatingRoleId(null);
     };
 
-    const handleViewUser = (user: UserListDto) => {
-        setSelectedUser(user);
-        setDialogOpen(true);
+    const handleViewUser = async (userId: string) => {
+        try {
+            setLoadingProfile(true);
+
+            const response = await api.get(
+                `/api/User/Profile`,
+                {
+                    params: { userId }
+                }
+            );
+
+            setSelectedProfile(response.data);
+            setDialogOpen(true);
+
+        } catch (error) {
+            toast.error("Failed to load profile");
+            console.error(error);
+        } finally {
+            setLoadingProfile(false);
+        }
     };
 
     const handleDeleteMember = async (id: string) => {
@@ -242,7 +280,7 @@ const SearchUsers = () => {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleViewUser(member)}
+                                                    onClick={() => handleViewUser(member.id)}
                                                 >
                                                     <Eye className="h-4 w-4 mr-1" />
                                                     View
@@ -281,7 +319,7 @@ const SearchUsers = () => {
             </div>
 
             <UserDetailDialog
-                user={selectedUser}
+                user={selectedProfile}
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
             />

@@ -420,6 +420,32 @@ namespace DevoteesAnusanga.Helper
             return reader.GetString(0); // PasswordHash
         }
 
+        public async Task UpdateUserRoleAsync(Guid userId, int roleId, Guid updatedBy)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("UpdateUserRole", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@RoleId", roleId);
+            cmd.Parameters.AddWithValue("@UpdatedBy", updatedBy);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteUserAsync(Guid userId, Guid deletedBy)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("DeleteUser", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@DeletedBy", deletedBy);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
         // =========================================================================================== [ User Creds Ends Here ]
 
         public List<Countries> GetAllCountries()

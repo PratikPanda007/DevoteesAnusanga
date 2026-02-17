@@ -157,5 +157,26 @@ namespace DevoteesAnusanga.Controllers
             });
         }
 
+        [Authorize(Roles = "Super Admin")]
+        [HttpPut("update-role")]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRole dto)
+        {
+            var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            await _db.UpdateUserRoleAsync(dto.UserId, dto.RoleId, adminId);
+
+            return Ok(new { message = "Role updated successfully" });
+        }
+
+        [Authorize(Roles = "Super Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            await _db.DeleteUserAsync(id, adminId);
+
+            return Ok(new { message = "User deleted successfully" });
+        }
     }
 }

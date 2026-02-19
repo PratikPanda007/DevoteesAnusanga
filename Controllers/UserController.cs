@@ -84,13 +84,14 @@ namespace DevoteesAnusanga.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var email = User.FindFirstValue(ClaimTypes.Email);
+            var name = _db.GetUserDetailsByEmail(email).Name;
 
             var existing = _db.GetUserProfileByUserId(userId);
             if (existing != null)
                 return BadRequest("Profile already exists");
 
             // 🔑 DEFAULT FALLBACKS
-            dto.Name ??= email;                // safe placeholder
+            dto.Name ??= name;                // safe placeholder
             dto.Email ??= email;
             dto.IsPublic ??= true;
             dto.RoleId ??= 4;                  // Devotee

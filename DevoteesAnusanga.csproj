@@ -6,7 +6,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
+	<Target Name="ReactBuild" AfterTargets="Publish">
+      <Exec WorkingDirectory="ClientApp" Command="npm install" />
+      <Exec WorkingDirectory="ClientApp" Command="npm run build" />
+
+      <ItemGroup>
+        <DistFiles Include="ClientApp/dist/**" />
+        <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+          <RelativePath>wwwroot/%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+          <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </ResolvedFileToPublish>
+      </ItemGroup>
+    </Target>
+
+	<ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="MailKit" Version="4.14.1" />
@@ -23,4 +36,17 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+	<!-- Ensure wwwroot exists -->
+	<ItemGroup>
+		<Folder Include="wwwroot\" />
+	</ItemGroup>
+
+	<!-- 🔥 AUTO COPY VITE DIST TO WWWROOT -->
+	<Target Name="CopyViteDist" AfterTargets="Build">
+		<ItemGroup>
+			<ViteDist Include="ClientApp\dist\**\*" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(ViteDist)" DestinationFiles="@(ViteDist->'wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+	</Target>
 </Project>

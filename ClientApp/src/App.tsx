@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,44 +30,102 @@ import AdminSettings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes - accessible to everyone */}
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/guidelines" element={<Guidelines />} />
-            <Route path="/contact" element={<Contact />} />
-            
-            {/* Profile route - requires authentication but NOT a profile (so users can create one) */}
-            <Route path="/profile" element={<Profile />} />
-            
-            {/* Devotee routes - requires authentication AND a profile */}
-            <Route path="/directory" element={<DevoteeRoute><Directory /></DevoteeRoute>} />
-            <Route path="/announcements" element={<DevoteeRoute><Announcements /></DevoteeRoute>} />
-            <Route path="/announcements/new" element={<DevoteeRoute><NewAnnouncement /></DevoteeRoute>} />
-            
-            {/* Admin routes - requires admin role */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/users" element={<SuperAdminRoute><AdminSearchUsers /></SuperAdminRoute>} />
-            <Route path="/admin/users/add" element={<SuperAdminRoute><AdminAddUser /></SuperAdminRoute>} />
-            <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-            <Route path="/admin/settings" element={<SuperAdminRoute><AdminSettings /></SuperAdminRoute>} />
-            <Route path="/admin/export" element={<SuperAdminRoute><DataExport /></SuperAdminRoute>} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Block F12
+            if (e.key === "F12") {
+                e.preventDefault();
+            }
+
+            // Block Ctrl+Shift+I (Windows)
+            if (e.ctrlKey && e.shiftKey && e.key === "I") {
+                e.preventDefault();
+            }
+
+            // Block Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.key === "J") {
+                e.preventDefault();
+            }
+
+            // Block Ctrl+U (View Source)
+            if (e.ctrlKey && e.key === "u") {
+                e.preventDefault();
+            }
+
+            // Mac: Cmd + Option + I
+            if (e.metaKey && e.altKey && e.key === "I") {
+                e.preventDefault();
+            }
+
+            if (e.ctrlKey && e.shiftKey && e.key === "i") {
+                e.preventDefault();
+            }
+
+            if (e.ctrlKey && e.shiftKey && e.key === "j") {
+                e.preventDefault();
+            }
+
+            if (e.ctrlKey && e.key === "u") {
+                e.preventDefault();
+            }
+
+            if (e.metaKey && e.altKey && e.key === "i") {
+                e.preventDefault();
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+
+        const handleContextMenu = (e: MouseEvent) => {
+            e.preventDefault();
+        };
+
+        document.addEventListener("contextmenu", handleContextMenu);
+
+        return () => {
+            document.removeEventListener("contextmenu", handleContextMenu);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+    return(
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                        <Routes>
+                            {/* Public routes - accessible to everyone */}
+                            <Route path="/" element={<Index />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/guidelines" element={<Guidelines />} />
+                            <Route path="/contact" element={<Contact />} />
+
+                            {/* Profile route - requires authentication but NOT a profile (so users can create one) */}
+                            <Route path="/profile" element={<Profile />} />
+
+                            {/* Devotee routes - requires authentication AND a profile */}
+                            <Route path="/directory" element={<DevoteeRoute><Directory /></DevoteeRoute>} />
+                            <Route path="/announcements" element={<DevoteeRoute><Announcements /></DevoteeRoute>} />
+                            <Route path="/announcements/new" element={<DevoteeRoute><NewAnnouncement /></DevoteeRoute>} />
+
+                            {/* Admin routes - requires admin role */}
+                            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                            <Route path="/admin/users" element={<SuperAdminRoute><AdminSearchUsers /></SuperAdminRoute>} />
+                            <Route path="/admin/users/add" element={<SuperAdminRoute><AdminAddUser /></SuperAdminRoute>} />
+                            <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+                            <Route path="/admin/settings" element={<SuperAdminRoute><AdminSettings /></SuperAdminRoute>} />
+                            <Route path="/admin/export" element={<SuperAdminRoute><DataExport /></SuperAdminRoute>} />
+
+                            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                    </BrowserRouter>
+                </TooltipProvider>
+            </AuthProvider>
+        </QueryClientProvider>
+    )
+};
 
 export default App;

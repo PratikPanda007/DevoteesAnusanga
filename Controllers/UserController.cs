@@ -94,7 +94,7 @@ namespace DevoteesAnusanga.Controllers
             dto.Name ??= name;                // safe placeholder
             dto.Email ??= email;
             dto.IsPublic ??= true;
-            dto.RoleId ??= 4;                  // Devotee
+            dto.RoleId ??= 3;                  // Devotee
 
             await _db.CreateUserProfileAsync(userId, dto);
 

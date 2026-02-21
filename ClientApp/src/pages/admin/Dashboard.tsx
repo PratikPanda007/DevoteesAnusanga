@@ -13,10 +13,12 @@ import {
 } from "lucide-react";
 
 import { fetchDashboardData, AdminDashboard } from "@/lib/admin-dashboard-api";
+import { useAuth } from "../../lib/auth-context";
 
 const Dashboard = () => {
     const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
     const [loading, setLoading] = useState(true);
+    const { isAdmin, isSuperAdmin } = useAuth();
 
     useEffect(() => {
         loadDashboard();
@@ -68,7 +70,9 @@ const Dashboard = () => {
                                 <Users className="h-5 w-5 text-primary" />
                                 <div>
                                     <p className="text-2xl font-semibold">
-                                        {dashboard.totalUsers}
+                                        {isSuperAdmin ?
+                                            dashboard.totalUsers
+                                            : Math.max(0, dashboard.totalUsers - 2) }
                                     </p>
                                     <p className="text-sm text-muted-foreground">
                                         Total Members
@@ -84,7 +88,9 @@ const Dashboard = () => {
                                 <UserCheck className="h-5 w-5 text-green-600" />
                                 <div>
                                     <p className="text-2xl font-semibold">
-                                        {dashboard.publicProfiles}
+                                        {isSuperAdmin ?
+                                            dashboard.publicProfiles
+                                            : Math.max(0, dashboard.publicProfiles - 2)}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
                                         Public Profiles
@@ -100,7 +106,9 @@ const Dashboard = () => {
                                 <UserX className="h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p className="text-2xl font-semibold">
-                                        {dashboard.privateProfiles}
+                                        {isSuperAdmin ?
+                                            dashboard.privateProfiles
+                                            : Math.max(0, dashboard.privateProfiles - 2)}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
                                         Private Profiles

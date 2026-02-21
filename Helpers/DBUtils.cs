@@ -711,5 +711,31 @@ namespace DevoteesAnusanga.Helper
         }
 
         // ==================================================================== [ Announcements Ends Here]
+
+        // ==================================================================== [ Get Admin Dashboard Starts Here ]
+        public async Task<AdminDashboard> GetAdminDashbaordData()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("GetAllDashboardData", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!reader.Read())
+                return null;
+
+            return new AdminDashboard
+            {
+                TotalUsers = reader.GetInt32(reader.GetOrdinal("TotalUsers")),
+                PublicProfiles = reader.GetInt32(reader.GetOrdinal("PublicProfiles")),
+                PrivateProfiles = reader.GetInt32(reader.GetOrdinal("PrivateProfiles")),
+                TotalAnnouncements = reader.GetInt32(reader.GetOrdinal("TotalAnnouncements")),
+                PendingAnnouncements = reader.GetInt32(reader.GetOrdinal("PendingAnnouncements")),
+                ApprovedAnnouncements = reader.GetInt32(reader.GetOrdinal("ApprovedAnnouncements")),
+                RejectedAnnouncements = reader.GetInt32(reader.GetOrdinal("RejectedAnnouncements"))
+            };
+        }
+        // ==================================================================== [ Get Admin Dashboard Starts Here ]
     }
 }

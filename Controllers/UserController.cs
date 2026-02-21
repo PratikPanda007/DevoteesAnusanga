@@ -179,5 +179,17 @@ namespace DevoteesAnusanga.Controllers
 
             return Ok(new { message = "User deleted successfully" });
         }
+
+        // ==========================================================[ Admin Dashboard ]
+        [HttpGet("get-dashboard-data")]
+        public async Task<IActionResult> GetAdminDashbaordData()
+        {
+            var adminDashboard = await _db.GetAdminDashbaordData();
+
+            if (adminDashboard == null)
+                return NotFound();
+
+            return Ok(adminDashboard);
+        }
     }
 }
